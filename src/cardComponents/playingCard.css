@@ -1,0 +1,142 @@
+/* ======================== Gestione Classe div Carta */
+
+.card-container {
+  color: #000000; 
+  background-color: #f1faee; 
+  width: 160px;
+  height: 220px;
+  border-radius: 3.5px; 
+  box-shadow: 
+    0 -2.5px 0 0 #000, 
+    0 2.5px 0 0 #000, 
+    -2.5px 0 0 0 #000, 
+    2.5px 0 0 0 #000, 
+    12px 12px 0 0 rgba(0, 0, 0, 0.4);
+  margin: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; 
+  padding: 15px;
+  position: relative;
+  font-family: 'Press Start 2P', cursive;
+  image-rendering: pixelated;
+  box-sizing: border-box;
+}
+
+.card-container:hover { transform: translateY(-10px) scale(1.02); }
+.card-container:active { transform: scaleX(1.1) scaleY(0.9) translateY(0); }
+
+/* === Gestione Classi CSS per testo carta (.top) ed eventuale seme (.bottom) */
+
+.card-corner.top {
+  font-size: 12.5px;
+  line-height: 1;
+  letter-spacing: 1.5px;
+  align-self: center;
+}
+
+.card-corner.bottom {
+  display: flex;
+  align-self: center;
+}
+
+.card-corner.bottom .suit-icon {
+  margin-top: -4px;
+  width: 55px;            
+  height: auto;
+}
+
+/* ======================== Centro della carta */
+
+.card-center {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.card-center .suit-icon {
+  margin-top: 10px; 
+  align-self: center;
+  max-height: 50px;
+  flex-basis: 35%;
+  object-fit: contain;
+}
+
+/* ======================== Layout per 1 */
+
+.card-center.layout-1 {
+  flex-direction: column;
+  width: 100px;
+}
+
+.card-center.layout-1 .suit-icon {
+  margin-top: 25px; 
+  flex-basis: auto;
+  width: 120px; 
+  max-height: 120px;
+}
+
+/* ======================== Layout per 2 */
+
+.card-center.layout-2 {
+  flex-direction: column;
+  width: 40px;
+}
+
+.card-center.layout-2 .suit-icon {
+  margin-top: 12px; 
+  flex-basis: auto;
+  max-height: 120px;
+  width: 160%;
+}
+
+/* ======================== Layout per 3 */
+
+.card-center.layout-3 .suit-icon {
+  margin-top: 20px; 
+  flex-basis: 40%; 
+  max-height: 70px;
+}
+
+/* ======================== Layout per 4 */
+
+.card-center.layout-4 .suit-icon {
+  margin-top: 20px;
+  flex-basis: 40%; 
+  max-height: 70px;
+}
+
+/* ======================== Layout per 7 */
+
+.card-center.layout-7 {
+  width: 100%; 
+  max-width: 100px;
+  gap: 2px;
+}
+
+.card-center.layout-7 .suit-icon {
+  margin-top: 5px; 
+  width: 40px; 
+  flex-basis: 40%; 
+  max-height: 40px;
+}
+
+/* ======================== Layout per figure */
+
+.card-center.layout-figure {
+  justify-content: space-between; 
+  width: 100%;
+}
+
+.card-center.layout-figure .suit-icon {
+  margin-top: 5px; 
+  flex-basis: 100%;
+  max-width: 140px;
+  max-height: 140px;
+}
+
