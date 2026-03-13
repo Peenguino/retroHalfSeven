@@ -36,11 +36,11 @@ const cardTitle = (value: String) => {
     case '7':
       return "sette"
     case '8':
-      return "otto"
+      return "fante"
     case '9':
-      return "nove"
+      return "cavallo"
     case '10':
-      return "dieci"
+      return "re"
   }
 }
 

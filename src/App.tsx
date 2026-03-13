@@ -22,6 +22,7 @@ function App() {
       <PlayingCard rank="6" suit="denari" />
       <PlayingCard rank="7" suit="denari" />
       <PlayingCard rank="8" suit="denari" />
+      <PlayingCard rank="9" suit="denari" />
       <PlayingCard rank="10" suit="denari" />
 
 
@@ -33,6 +34,9 @@ function App() {
       <PlayingCard rank="6" suit="spade" />
       <PlayingCard rank="7" suit="spade" />
       <PlayingCard rank="8" suit="spade" />
+      <PlayingCard rank="9" suit="spade" />
+      <PlayingCard rank="10" suit="spade" />
+
 
       <PlayingCard rank="1" suit="bastoni" />
       <PlayingCard rank="2" suit="bastoni" />
@@ -42,6 +46,9 @@ function App() {
       <PlayingCard rank="6" suit="bastoni" />
       <PlayingCard rank="7" suit="bastoni" />
       <PlayingCard rank="8" suit="bastoni" />
+      <PlayingCard rank="9" suit="bastoni" />
+      <PlayingCard rank="10" suit="bastoni" />
+
 
       <PlayingCard rank="1" suit="coppe" />
       <PlayingCard rank="2" suit="coppe" />
@@ -51,6 +58,9 @@ function App() {
       <PlayingCard rank="6" suit="coppe" />
       <PlayingCard rank="7" suit="coppe" />
       <PlayingCard rank="8" suit="coppe" />
+      <PlayingCard rank="9" suit="coppe" />
+      <PlayingCard rank="10" suit="coppe" />
+
 
     </div>
   )

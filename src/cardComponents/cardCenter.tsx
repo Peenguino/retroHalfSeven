@@ -5,6 +5,7 @@ import semeCoppe from '../assets/exportedAssets/semeCoppe.png';
 import semeBastoni from '../assets/exportedAssets/semeBastoni.png';
 import semeSpade from '../assets/exportedAssets/semeSpade.png';
 import reImg from '../assets/exportedAssets/re.png';
+import cavalloImg from '../assets/exportedAssets/cavallo.png';
 import donnaImg from '../assets/exportedAssets/donna.png';
 
 
@@ -19,7 +20,7 @@ const SUIT_IMAGES: Record<string, string> = {
 
 const FIGURES_IMAGES: Record<string, string> = {
   "8": donnaImg,
-  "9": "cavalloImg", //temporaneo
+  "9": cavalloImg,
   "10": reImg,
 }
 
