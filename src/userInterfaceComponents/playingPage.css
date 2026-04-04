@@ -1,0 +1,27 @@
+.outer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.table-container {
+    color: #000000; 
+    background-color: #259500; 
+    width: 90vw;  
+    height: 600px;
+    
+    border-radius: 1000px; 
+    
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 30px;
+    
+    position: relative;
+    overflow: hidden;
+
+    font-family: 'Press Start 2P', cursive;
+}
