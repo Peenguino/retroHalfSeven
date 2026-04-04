@@ -23,8 +23,7 @@
   box-sizing: border-box;
 }
 
-.card-container:hover { transform: translateY(-10px) scale(1.02); }
-.card-container:active { transform: scaleX(1.1) scaleY(0.9) translateY(0); }
+.card-container:hover { transform: translateY(-10px) scale(1.05); }
 
 /* === Gestione Classi CSS per testo carta (.top) ed eventuale seme (.bottom) */
 

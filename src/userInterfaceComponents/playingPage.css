@@ -9,19 +9,98 @@
 
 .table-container {
     color: #000000; 
-    background-color: #259500; 
-    width: 90vw;  
-    height: 600px;
-    
-    border-radius: 1000px; 
-    
+    background-color: #338518; 
+    width: 1600px;  
+    height: 750px;
+    border-radius: 300px;
+
+    border: 5px solid #000000;
+
+    margin-top: 15px;
+    position: relative;
+    font-family: 'Press Start 2P', cursive;
+
+    /* --- gestione griglia a nominativi definiti --- */
+    display: grid;
+    /* 5 righe: top (banco), mid-4 (punteggio banco), mid-3 (monete), mid-2 (azioni), mid-1 (punteggio), bottom (giocatore)*/
+    grid-template-rows: 3fr 1fr 0.5fr 0.8fr 0.5fr 1fr;
+    /* 3 colonne */
+    grid-template-columns: 1fr 2fr 1fr; 
+    /* definizione nominativi per la griglia */
+    grid-template-areas:
+        "top-left  top-center  top-right"
+        "mid4-left  mid4-center  mid4-right"
+        "mid3-left  mid3-center  mid3-right"
+        "mid2-left  mid2-center  mid2-right"
+        "mid1-left  mid1-center  mid1-right"
+        "bottom-left  bottom-center  bottom-right";
+}
+
+/* area monete */
+.score-coins {
+    grid-area: mid3-center;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding-top: 30px;
-    
-    position: relative;
-    overflow: hidden;
-
-    font-family: 'Press Start 2P', cursive;
+    align-items: center;
 }
+
+/* area score player */
+.score-area {
+    grid-area: mid1-center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffd700;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px #000;
+}
+
+/* area bottoni */
+.actions-area {
+    grid-area: mid2-center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+}
+
+/* area giocatore */
+.player-area {
+    grid-area: bottom-center;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+/* area banco */
+.dealer-area {
+    grid-area: top-center;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+/* area score banco */
+.dealer-score-area {
+    grid-area: mid4-center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffd700;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px #000;
+}
+
+.playing_button {
+    color: #fff;
+    width: 120px;
+    height: 35px;
+    border-radius: 40px;
+
+    background-color: #000000; 
+    font-family: 'Press Start 2P';
+}
+
+.playing_button:hover { transform: scale(1.10); }
+.playing_button:active { transform: scaleX(0.9) scaleY(0.9) }

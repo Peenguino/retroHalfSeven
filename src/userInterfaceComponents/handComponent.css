@@ -1,0 +1,8 @@
+.hand-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 250px;
+  margin-top: auto;
+  transform-origin:  center;
+}
