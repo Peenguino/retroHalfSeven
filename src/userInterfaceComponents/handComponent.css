@@ -1,8 +1,16 @@
+.hand-card {
+  margin-left: -50px;
+
+}
+
+/* per centrare, annullando il margine negativo alla prima */
+.hand-card:first-child {
+  margin-left: 0;
+}
+
 .hand-container {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 250px;
-  margin-top: auto;
-  transform-origin:  center;
+  transform-origin: center;
 }

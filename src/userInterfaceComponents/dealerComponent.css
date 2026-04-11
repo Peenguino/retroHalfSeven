@@ -1,7 +1,19 @@
-.hand-container {
+/* Contenitore della mano del banco */
+.dealer-hand-container {
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  height: 250px;
-  margin-top: auto;
+  align-items: center;
+  /* Ridimensiona l'intera mano al 70% della dimensione originale */
+  transform: scale(0.78); 
+  transform-origin: center top; /* Mantiene le carte ancorate in alto */
+}
+
+/* Regola singola per la carta nel banco */
+.dealer-card {
+  position: relative;
+}
+
+/* La prima carta non deve avere il margine negativo, altrimenti si sposta troppo a sinistra */
+.dealer-card:first-child {
+  margin-left: 0;
 }

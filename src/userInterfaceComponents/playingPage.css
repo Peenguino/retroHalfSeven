@@ -23,7 +23,7 @@
     /* --- gestione griglia a nominativi definiti --- */
     display: grid;
     /* 5 righe: top (banco), mid-4 (punteggio banco), mid-3 (monete), mid-2 (azioni), mid-1 (punteggio), bottom (giocatore)*/
-    grid-template-rows: 3fr 1fr 0.5fr 0.8fr 0.5fr 1fr;
+    grid-template-rows: 3fr 1fr 0.5fr 1fr 0.5fr 1fr;
     /* 3 colonne */
     grid-template-columns: 1fr 2fr 1fr; 
     /* definizione nominativi per la griglia */
@@ -42,17 +42,41 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    image-rendering: pixelated;
+    margin-bottom: 20px;
+    gap: 75px;
 }
 
-/* area score player */
-.score-area {
-    grid-area: mid1-center;
+.fiche_container {
+    cursor: pointer;
+    transition: transform 0.1s;
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: scale(2.25);
+    padding: 2px;
+}
+
+.fiche_container:hover { 
+    transform: scale(2.50); 
+}
+
+.fiche_container:active { 
+    transform: scale(2.30); 
+}
+
+/* area score player */
+.sum-score-fiches-area {
+    grid-area: mid1-center;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 30px;
+
     color: #ffd700;
     font-size: 1.2rem;
     text-shadow: 2px 2px #000;
+    margin-bottom: 15px;
 }
 
 /* area bottoni */
@@ -71,6 +95,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    margin-bottom: 50px;
 }
 
 /* area banco */
@@ -83,6 +108,7 @@
 
 /* area score banco */
 .dealer-score-area {
+    margin-top: -100px;
     grid-area: mid4-center;
     display: flex;
     justify-content: center;

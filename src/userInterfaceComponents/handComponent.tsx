@@ -21,7 +21,8 @@ export default function Hand({ cards }: HandProps) {
         const translateY = Math.abs(index - middleIndex) * 20;
 
         return (
-          <div 
+          <div
+            className='hand-card'
             style={{
               transform: `rotate(${rotation}deg) translateY(${translateY}px)`,
             }}
