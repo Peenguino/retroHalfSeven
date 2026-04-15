@@ -16,3 +16,9 @@ export interface FichesProps {
 export interface BettedFichesProps {
   stackedFiches: FichesProps[];
 }
+
+export interface OpponentProps {
+    cards: CardProps[];
+    gridArea: string;
+    rotationClass: string;
+}

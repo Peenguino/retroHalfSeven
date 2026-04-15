@@ -130,3 +130,45 @@
 
 .playing_button:hover { transform: scale(1.10); }
 .playing_button:active { transform: scaleX(0.9) scaleY(0.9) }
+
+/* === Stile avversari */
+
+.opponent-grid-cell {
+    transform: scale(0.60);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Wrapper: evita che la rotazione alteri la struttura della griglia */
+.opponent-rotation-wrapper {
+    width: 0;
+    height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible; 
+}
+
+/* Rotazioni specifiche e ridimensionamento */
+.rotate-left {
+    transform: rotate(40deg) scale(0.8);
+    margin-left: -50px; 
+}
+
+.rotate-right {
+    transform: rotate(-40deg) scale(0.8);
+    margin-right: -50px;
+}
+
+.rotate-top-left {
+    transform: rotate(140deg) scale(0.8);
+    margin-top: -50px;
+    margin-left: -50px;
+}
+
+.rotate-top-right {
+    transform: rotate(-140deg) scale(0.8);
+    margin-top: -50px;
+    margin-right: -50px;
+}

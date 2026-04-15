@@ -1,11 +1,12 @@
-import { use, useState } from 'react'
+import { useState } from 'react'
 import './playingPage.css'
 import Hand from './handComponent'
 import DealerHand from './dealerComponent';
 import { type CardProps,
          type HandProps,
          type BettedFichesProps, 
-         type FichesProps} from '../cardComponents/types';
+         type FichesProps,
+         type OpponentProps } from '../cardComponents/types';
 import './handComponent.css';
 
 import venticentesimi from '../assets/exportedAssets/20cent.png';
@@ -93,6 +94,18 @@ function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: numb
     )
 }
 
+function OpponentHand({ cards, gridArea, rotationClass }: OpponentProps) {
+    return (
+        // Il contenitore che si posiziona nella cella della griglia
+        <div className="opponent-grid-cell" style={{ gridArea: gridArea }}>
+            {/* Il wrapper che applica la rotazione senza occupare spazio fisico */}
+            <div className={`opponent-rotation-wrapper ${rotationClass}`}>
+                <Hand cards={cards} />
+            </div>
+        </div>
+    );
+}
+
 function TableContainer({ playerCards, dealerCards }: { playerCards: CardProps[], dealerCards: CardProps[] }) {
 
     // Mantengo lo stato delle fiches nel componente genitore, quindi TableContainer
@@ -110,6 +123,11 @@ function TableContainer({ playerCards, dealerCards }: { playerCards: CardProps[]
     return (
       <div className='table-container'>
         
+        <OpponentHand cards={myCards} gridArea="bottom-left" rotationClass="rotate-left" />
+        <OpponentHand cards={myCards} gridArea="bottom-right" rotationClass="rotate-right" />
+        <OpponentHand cards={myCards} gridArea="top-left" rotationClass="rotate-top-left" />
+        <OpponentHand cards={myCards} gridArea="top-right" rotationClass="rotate-top-right" />
+
         <div className='dealer-area'>
             <DealerHand cards={dealerCards} />
         </div>
