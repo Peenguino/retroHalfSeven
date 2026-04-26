@@ -3,49 +3,69 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { type Session } from "@supabase/supabase-js";
 import '../supabaseComponents/authComponents.css'
-import { AuthComponent } from "../supabaseComponents/authComponents";
-import { supabase } from "../supabaseComponents/supabaseClient";
+import { AuthComponent } from "../auth_supabase/authComponents";
+import { supabase } from "../auth_supabase/supabaseClient";
 
 export default function Homepage() {
     const [session, setSession] = useState<Session | null>(null);
+    const [loading, setLoading] = useState(false); // Stato per il bottone
     const navigate = useNavigate();
 
-    // Nel componente Homepage setto grazie ad useEffect l'operazione da eseguire a tempo di rendering del componente
-    // di conseguenza 
     useEffect(() => {
-        // Ottieni la sessione iniziale
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
         });
 
-        // Ascolta i cambiamenti di stato (login, logout)
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
-    // Se non c'è nessuna sessione, mostra la schermata di Login/Registrazione
+    // FUNZIONE CORE: Invocazione della Lambda
+    const handleCreateGame = async () => {
+        setLoading(true);
+        try {
+            // Invochiamo la funzione create-game. 
+            // Supabase allega automaticamente il token della sessione.
+            const { data, error } = await supabase.functions.invoke('create-game');
+
+            if (error) throw error;
+
+            console.log("Partita creata:", data);
+            
+            // Una volta creata la partita, navighiamo alla pagina di gioco.
+            // Passiamo l'ID della partita nell'URL (es: /playingpage/uuid-della-partita)
+            navigate(`/playingpage/${data.game_id}`);
+
+        } catch (err) {
+            console.error("Errore creazione partita:", err);
+            alert("Non è stato possibile creare la partita. Controlla il terminale delle funzioni.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (!session) {
         return <AuthComponent/>;
     }
 
-    // Placeholder Post-Accesso
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '20px' }}>
             <h1>Benvenuto in retroHalfSeven!</h1>
-            <p>Accesso effettuato come: <strong>{session.user.email || 'Utente OAuth'}</strong></p>
+            <p>Accesso effettuato come: <strong>{session.user.email}</strong></p>
             
             <div style={{ display: 'flex', gap: '10px' }}>
+                {/* Nuovo bottone per creare la partita tramite Lambda */}
                 <button 
-                    onClick={() => navigate('/playingpage')}
+                    onClick={handleCreateGame}
                     className='auth-button'
+                    disabled={loading}
                 >
-                    Gioca Ora
+                    {loading ? "Creazione..." : "Crea Nuova Partita"}
                 </button>
+
                 <button 
                     onClick={() => supabase.auth.signOut()}
                     className='auth-button'
