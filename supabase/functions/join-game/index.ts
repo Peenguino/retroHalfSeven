@@ -67,8 +67,8 @@ serve(async (request) => {
   
     if (joinError) throw joinError;
 
-    console.log(`Il player è entrato nella lobby ${game.id}`)
-  
+    console.log(`Lobby a cui ci siamo uniti ha invite-code: ${invite_code}`)
+
     return new Response(
       JSON.stringify({ success: true, game_id: game.id }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
