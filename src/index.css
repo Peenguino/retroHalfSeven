@@ -25,3 +25,136 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+
+/* authComponents.css */
+
+.homepage-container {
+    /* Centratura a tutto schermo, simile al tuo .outer-container */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    
+    /* Usiamo il verde del tavolo come sfondo principale */
+    background-color: #338518; 
+    font-family: 'Press Start 2P', cursive;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* --- Stile degli Input (Email, Password) --- */
+.homepage-container input {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    padding: 15px 20px;
+    width: 100%;
+    max-width: 400px;
+    
+    /* Richiamiamo i bordi spessi neri che usi per il tavolo */
+    border: 5px solid #000000;
+    border-radius: 12px; /* Leggermente stondati */
+    outline: none;
+    background-color: #ffffff;
+    color: #000000;
+    
+    /* Ombreggiatura per un effetto 3D retro */
+    box-shadow: 4px 4px 0px #000000;
+    transition: transform 0.1s, border-color 0.1s, box-shadow 0.1s;
+}
+
+/* Effetto quando l'utente clicca sull'input */
+.homepage-container input:focus {
+    /* Usiamo l'oro dei tuoi testi di score per il focus */
+    border-color: #ffd700; 
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000000;
+}
+
+/* --- Stile dei Bottoni (Registrati, Accedi, Esci) --- */
+.homepage-button {
+    /* Riprende esattamente la classe .playing_button */
+    color: #fff;
+    width: 200px;
+    height: 45px;
+    border-radius: 40px;
+    border: none;
+
+    background-color: #000000; 
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    cursor: pointer;
+    
+    /* Aggiunta di un'ombra oro per staccarli dallo sfondo verde */
+    box-shadow: 1px 2px 1px #ffffff;
+    
+    transition: transform 0.1s, box-shadow 0.1s, color 0.1s;
+}
+
+.homepage-button:hover { 
+    transform: scale(1.02); 
+    color: #ffd700; /* Il testo diventa oro all'hover */
+}
+
+.homepage-container button:active { 
+    transform: scaleX(0.9) scaleY(0.9) translateY(4px); 
+    box-shadow: 0px 0px 0px #ffd700; /* L'ombra sparisce per simulare la pressione fisica */
+}
+
+.auth-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    /* Colore verde più scuro rispetto allo sfondo */
+    background-color: #103204; 
+    
+    /* Padding generoso per dare respiro agli elementi interni */
+    padding: 30px 30px;
+    
+    /* Bordi stondati e spessi in stile retro */
+    border: 5px solid #000000;
+    border-radius: 20px;
+    
+    /* Ombra netta per l'effetto 3D */
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.3);
+    
+    /* Larghezza massima per non farlo troppo grande su desktop */
+    max-width: 450px;
+    width: 60%;
+    
+    /* Spazio tra gli elementi interni (titolo, input, bottoni) */
+    gap: 20px;
+}
+
+.game-title {
+    /* Rimuoviamo il contenitore bianco, i bordi e il padding */
+    display: block; 
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    width: auto; /* Si adatta alla lunghezza del testo */
+    
+    /* Font e Colore */
+    font-family: 'Press Start 2P', cursive;
+    font-size: 3.5rem; /* Molto più grande rispetto al resto */
+    color: #ffffff;    /* Testo bianco */
+    text-align: center;
+    
+    /* Effetto Bordo Nero Spesso (Stile Fumetto/Retro) */
+    /* Creiamo 8 ombre diverse per coprire ogni angolo */
+    text-shadow: 
+        -4px -4px 0 #000,  
+         4px -4px 0 #000,
+        -4px  4px 0 #000,
+         4px  4px 0 #000,
+         0px  5px 0 #000,
+         0px -5px 0 #000,
+         5px  0px 0 #000,
+        -5px  0px 0 #000;
+
+    margin-bottom: 25px;
+    letter-spacing: 4px;
+}

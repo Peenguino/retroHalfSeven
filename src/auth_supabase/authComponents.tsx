@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from './supabaseClient';
 import { type Provider } from '@supabase/supabase-js';
-import './authComponents.css';
+import '../index.css';
 
 export function AuthComponent() {
   const [email, setEmail] = useState('');
@@ -35,22 +35,19 @@ export function AuthComponent() {
   };
 
   return (
-    <div className='auth-container'>
-        <div className='game-title'> retroHalfSeven </div>
-      <div className='auth-card'>
-        <input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        <input type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-        
-        <button className='auth-button' onClick={handleSignUp}>Registrati</button>
-        <button className='auth-button' onClick={handleLogin}>Accedi</button>
-        
-        {/* Separatore visivo */}
-        <hr style={{ width: '100%', margin: '15px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
+    <div className='auth-card'>
+      <input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+      
+      <button className='homepage-button' onClick={handleSignUp}>Registrati</button>
+      <button className='homepage-button' onClick={handleLogin}>Accedi</button>
+      
+      {/* Separatore visivo */}
+      <hr style={{ width: '100%', margin: '15px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
 
-        <button className='auth-button' onClick={() => handleOAuthLogin('discord')} style={{ backgroundColor: '#5865F2', color: 'white' }}>
-            Accedi con Discord
-        </button>
-      </div>
+      <button className='homepage-button' onClick={() => handleOAuthLogin('discord')} style={{ backgroundColor: '#5865F2', color: 'white' }}>
+          Accedi con Discord
+      </button>
     </div>
   );
 }
