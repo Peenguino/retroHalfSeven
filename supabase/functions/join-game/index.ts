@@ -62,7 +62,7 @@ serve(async (request) => {
       .insert({
         game_id: game.id,
         user_id: user.id,
-        status: 'playing'
+        status: 'waiting'
       });
   
     if (joinError) throw joinError;

@@ -1,0 +1,1 @@
+ALTER TABLE public.games ADD COLUMN target_start_time TIMESTAMPTZ;

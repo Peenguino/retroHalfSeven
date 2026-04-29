@@ -21,4 +21,5 @@ export interface OpponentProps {
     cards: CardProps[];
     gridArea: string;
     rotationClass: string;
+    status: string;
 }
