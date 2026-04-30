@@ -38,8 +38,7 @@ serve(async (request) => {
       .single();
   
     if (gameError || !game) throw new Error('Partita non trovata');
-    // TODO: successivamente lasciamo entrare giocatori a partita in corso
-    if (game.status !== 'waiting') throw new Error('La partita è già iniziata o terminata');
+    if (game.status === 'finished') throw new Error('La partita è terminata');
   
     // Check quanti giocatori ci sono o se l'utente è già dentro
     const { data: existingPlayers, error: playersError } = await supabaseAdmin
@@ -56,13 +55,15 @@ serve(async (request) => {
         throw new Error('La stanza è piena (max 5 giocatori)');
     }
     
+    const playerInitialStatus = game.status === 'playing' ? 'spectating' : 'waiting';
+
     // Handling inserimento nuovo utente in partita
     const { error: joinError } = await supabaseAdmin
       .from('game_players')
       .insert({
         game_id: game.id,
         user_id: user.id,
-        status: 'waiting'
+        status: playerInitialStatus
       });
   
     if (joinError) throw joinError;

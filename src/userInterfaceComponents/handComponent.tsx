@@ -22,6 +22,7 @@ export default function Hand({ cards }: HandProps) {
 
         return (
           <div
+            key={`${card.suit}-${card.rank}-${index}`}
             className='hand-card'
             style={{
               transform: `rotate(${rotation}deg) translateY(${translateY}px)`,

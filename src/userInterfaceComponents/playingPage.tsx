@@ -6,7 +6,8 @@ import { type CardProps,
          type HandProps,
          type BettedFichesProps, 
          type FichesProps,
-         type OpponentProps } from '../cardComponents/types';
+         type OpponentProps, 
+         type TableContainerProps} from '../cardComponents/types';
 import './handComponent.css';
 
 import venticentesimi from '../assets/exportedAssets/20cent.png';
@@ -51,6 +52,9 @@ function ActionButton({ buttonType }: { buttonType: string }) {
 function ScoreVisualizer({ cards, owner }: HandProps) {
 
     function calculateScore() {
+
+        if (!cards) return 0;
+
         return cards.reduce((acc, card) => {
             const value = (card.rank === "8" || card.rank === "9" || card.rank === "10")
                 ? 0.5
@@ -96,10 +100,10 @@ function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: numb
     )
 }
 
-function OpponentHand({ cards, gridArea, rotationClass, status }: OpponentProps) {
+function OpponentHand({ cards, gridArea, rotationClass, status, isCurrentTurn }: OpponentProps) {
     return (
         // Il contenitore che si posiziona nella cella della griglia
-        <div className="opponent-grid-cell" style={{ gridArea: gridArea }}>
+        <div className={`opponent-grid-cell ${isCurrentTurn ? 'active-turn' : ''}`} style={{ gridArea: gridArea }}>
             {/* Il wrapper che applica la rotazione senza occupare spazio fisico */}
             <div className={`opponent-rotation-wrapper ${rotationClass}`}>
                 {cards && cards.length > 0 ? (
@@ -141,15 +145,11 @@ function TableContainer({
     opponents,
     gameId,
     currentPlayerStatus,
-    targetStartTime
-}: { 
-    playerCards: CardProps[], 
-    dealerCards: CardProps[],
-    opponents: any[],
-    gameId: string | undefined,
-    currentPlayerStatus: string,
-    targetStartTime: string | null
-}) {
+    targetStartTime,
+    currentTurnPlayerId,
+    currentUserId,
+    gameStatus
+}: TableContainerProps) {
 
     // Mantengo lo stato delle fiches nel componente genitore, quindi TableContainer
     const [getBettedFiches, setBettedFiches] = useState<FichesProps[]>([])
@@ -158,6 +158,9 @@ function TableContainer({
     // Stato del timer del pronto, con variabile per lo stato del giocatore
     const [timeLeft, setTimeLeft] = useState<number | null>(null)
     const isReady = currentPlayerStatus === 'ready'
+
+    const isSpectator = currentPlayerStatus === 'spectating'
+    const isMyTurn = currentTurnPlayerId === currentUserId
 
     // useEffect per gestione timer pronto
     useEffect(() => {
@@ -171,7 +174,7 @@ function TableContainer({
         const initialDiff = calculateDiff();
         setTimeLeft(initialDiff > 0 ? initialDiff : 0);
 
-        const interval = setInterval(() => {
+        const interval = setInterval(async () => {
             const diff = calculateDiff()
             if (diff > 0){
                 setTimeLeft(diff)
@@ -183,6 +186,34 @@ function TableContainer({
 
         return () => clearInterval(interval)
     }, [targetStartTime])
+
+    // useEffect per invocazione edge function start-game
+    useEffect(() => {
+        const triggerStartGame = async () => {
+            // Controlliamo che il timer sia a zero, che il gioco esista,
+            // - che siamo effettivamente pronti e che il gioco non sia già in esecuzione
+            console.log("DEBUG start-game conditions:", { timeLeft, gameId, isReady, gameStatus });
+            if (timeLeft === 0 && gameId && isReady && gameStatus === 'waiting') {
+                console.log("Timer a 0. Richiedo l'inizio della partita...");
+                try {
+                    const { data, error } = await supabase.functions.invoke('start-game', {
+                        body: { game_id: gameId }
+                    });
+                    
+                    console.log("Response da start-game:", { data, error });
+                    if (error) {
+                         console.error("Errore nell'avvio della partita:", error);
+                    } else {
+                        console.log("Partita avviata con successo!");
+                    }
+                } catch (err) {
+                    console.error("Eccezione durante l'avvio della partita:", err);
+                }
+            }
+        };
+
+        triggerStartGame();
+    }, [timeLeft, gameId, isReady, gameStatus]);
 
     const handleAddFiche = (ficheValue: number) => {
         if (isReady) return;
@@ -255,6 +286,7 @@ function TableContainer({
                     gridArea={slot.gridArea}
                     rotationClass={slot.rotationClass}
                     status={opponent.status}
+                    isCurrentTurn={currentTurnPlayerId === opponent.user_id}
                 />
             )
         })}        
@@ -263,40 +295,64 @@ function TableContainer({
             <DealerHand cards={dealerCards} />
         </div>
 
-        <div className="score-coins">
-            <Fiches value={0.2} onClickFiche={handleAddFiche} />
-            <Fiches value={0.5} onClickFiche={handleAddFiche} />
-            <Fiches value={1} onClickFiche={handleAddFiche} />
-            <Fiches value={2} onClickFiche={handleAddFiche} />
-            <Fiches value={-1} onClickFiche={handleResetFiche} />
-        </div>
+        
 
-
-
-        <div className="actions-area">
-            { /* <ActionButton buttonType="CARTA" /> */ }
-            { /* <ActionButton buttonType="STAI" /> */ }
-
-            { /* Visualizzazione Timer */}
-            {timeLeft !== null && (
-                <div style={{ color: 'white', marginBottom: '10px', fontSize: '18px', fontFamily: 'monospace' }}>
-                    {timeLeft > 0 ? `Inizio tra ${timeLeft}...` : "Iniziando..."}
+        {isSpectator ? (
+            <div className="spectator-banner" style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                backgroundColor: 'rgba(0,0,0,0.8)', color: 'white', padding: '20px',
+                borderRadius: '10px', zIndex: 10, textAlign: 'center', border: '2px solid gold'
+            }}>
+                <h3>Stai guardando la partita</h3>
+                <p>Entrerai in gioco automaticamente alla prossima mano.</p>
+            </div>
+        ) : gameStatus === 'playing' ? (
+            // === FASE DI GIOCO ATTIVA ===
+            <div className="actions-area">
+                {isMyTurn ? (
+                    <>
+                        <button className='playing_button'>CARTA</button>
+                        <button className='playing_button'>STAI</button>
+                    </>
+                ) : (
+                    <div style={{ color: 'white', fontSize: '18px', padding: '10px' }}>
+                        In attesa degli altri giocatori...
+                    </div>
+                )}
+            </div>
+        ) : (
+            // === FASE DI PUNTATA (WAITING) ===
+            <>
+                <div className="score-coins">
+                    <Fiches value={0.2} onClickFiche={handleAddFiche} />
+                    <Fiches value={0.5} onClickFiche={handleAddFiche} />
+                    <Fiches value={1} onClickFiche={handleAddFiche} />
+                    <Fiches value={2} onClickFiche={handleAddFiche} />
+                    <Fiches value={-1} onClickFiche={handleResetFiche} />
                 </div>
-            )}
 
-            <button 
-                className='playing_button' 
-                disabled={!isReady && totalBet <= 0} 
-                onClick={handleReadyClick}
-                style={{
-                    opacity: totalBet > 0 ? 1 : 0.5,
-                    cursor: totalBet > 0 ? 'pointer' : 'not-allowed',
-                    backgroundColor: isReady ? '#d9534f' : '' // Colore rosso per il tasto annulla
-                }}
-            >
-                {isReady ? 'ANNULLA' : (totalBet > 0 ? 'PRONTO' : 'PRONTO') }
-            </button>
-        </div>
+                <div className="actions-area">
+                    {timeLeft !== null && (
+                        <div style={{ color: 'white', marginBottom: '10px', fontSize: '18px', fontFamily: 'monospace' }}>
+                            {timeLeft > 0 ? `Inizio tra ${timeLeft}...` : "Iniziando..."}
+                        </div>
+                    )}
+
+                    <button 
+                        className='playing_button' 
+                        disabled={!isReady && totalBet <= 0} 
+                        onClick={handleReadyClick}
+                        style={{
+                            opacity: totalBet > 0 ? 1 : 0.5,
+                            cursor: totalBet > 0 ? 'pointer' : 'not-allowed',
+                            backgroundColor: isReady ? '#d9534f' : '' 
+                        }}
+                    >
+                        {isReady ? 'ANNULLA' : 'PRONTO'}
+                    </button>
+                </div>
+            </>
+        )}
 
         <div className='dealer-score-area'>
             <ScoreVisualizer cards={dealerCards} owner='Dealer' />
@@ -308,7 +364,8 @@ function TableContainer({
             <BettedFiches stackedFiches={getBettedFiches} />
         </div>
 
-        <div className="player-area">
+        {/* Aggiunta della classe active-turn alla player-area se è il nostro turno */}
+        <div className={`player-area ${isMyTurn ? 'active-turn' : ''}`}>
             <Hand cards={playerCards} />
         </div>
 
@@ -326,6 +383,12 @@ export default function Playingpage() {
 
     // Hook per data inizio timer pronto
     const [targetStartTime, setTargetStartTime] = useState<string | null>(null)
+
+    // Hook per tracciare a chi tocca in questo momento
+    const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<string | null>(null)
+
+    // Hook per stato partita
+    const [gameStatus, setGameStatus] = useState<string>('waiting')
 
     // Fetch del user ed estrazione dell'user.id
     // --- Non definiamo nessuna dipendenza nell'array secondo arg della useEffect: assumiamo che si debba eseguire ad ogni rirender
@@ -345,19 +408,23 @@ export default function Playingpage() {
         // Prima effettuiamo il fetch dei player e dei timer nella stanza
         const fetchInitialData = async () => {
 
+            const { data: gameData } = await supabase
+                .from('games')
+                .select('target_start_time, current_turn_user_id, status') // Aggiungi status
+                .eq('id', gameId)
+                .single()
+            if (gameData) {
+                setTargetStartTime(gameData.target_start_time)
+                setCurrentTurnPlayerId(gameData.current_turn_user_id)
+                setGameStatus(gameData.status) // <--- Salva lo stato
+            }            
+
             const { data : playersData } = await supabase
                 .from('game_players')
                 .select('*')
                 .eq('game_id', gameId)
                 .order('joined_at', {ascending: true});
             if (playersData) setPlayers(playersData)
-
-            const { data: gameData } = await supabase
-                .from('games')
-                .select('target_start_time')
-                .eq('id', gameId)
-                .single()
-            if (gameData) setTargetStartTime(gameData.target_start_time)
         }
         fetchInitialData();
 
@@ -397,8 +464,10 @@ export default function Playingpage() {
                     filter: `id=eq.${gameId}`
                 },
                 (payload) => {
-                    console.log("Timer aggiornato:", payload)
+                    console.log("Gioco aggiornato (Timer o Turno):", payload)
                     setTargetStartTime(payload.new.target_start_time)
+                    setCurrentTurnPlayerId(payload.new.current_turn_user_id)
+                    setGameStatus(payload.new.status)
                 }
             )
             .subscribe((status) => {
@@ -423,12 +492,15 @@ export default function Playingpage() {
     return (
         <div className='outer-container'>
             <TableContainer 
-                playerCards={myCards} // TODO: da sostituire con mainPlayer?.cards
+                playerCards={mainPlayer?.cards || []}
                 dealerCards={dealerCards}
                 opponents={opponents}
                 gameId={gameId}
                 currentPlayerStatus={mainPlayer?.status || 'waiting'}
                 targetStartTime={targetStartTime}
+                currentTurnPlayerId={currentTurnPlayerId}
+                currentUserId={currentUserId}
+                gameStatus={gameStatus}
             />
         </div>
     );

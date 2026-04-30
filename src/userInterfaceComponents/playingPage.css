@@ -172,3 +172,18 @@
     margin-top: -50px;
     margin-right: -50px;
 }
+
+/* === Stile per il turno corrente */
+
+/* Evidenzia il giocatore corrente con un bordo/ombra brillante */
+.player-area.active-turn {
+    box-shadow: 
+        0 0 20px 5px rgba(255, 215, 0, 0.8), 
+        0 0 20px 2px rgba(255, 215, 0, 0.5);
+    border-radius: 10px;
+}
+
+/* Evidenzia gli avversari col turno con ombra dorata */
+.opponent-grid-cell.active-turn {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
+}

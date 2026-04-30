@@ -22,4 +22,17 @@ export interface OpponentProps {
     gridArea: string;
     rotationClass: string;
     status: string;
+    isCurrentTurn: boolean;
+}
+
+export interface TableContainerProps {
+    playerCards: CardProps[]; 
+    dealerCards: CardProps[];
+    opponents: any[];
+    gameId: string | undefined;
+    currentPlayerStatus: string;
+    targetStartTime: string | null;
+    currentTurnPlayerId: string | null;
+    currentUserId: String | null;
+    gameStatus: string;
 }

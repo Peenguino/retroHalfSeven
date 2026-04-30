@@ -49,9 +49,10 @@ function findLayoutClass (count: number) {
 }
 
 const CardCenter = ({ rank, suit }: CardProps) => {
+    const rankStr = String(rank);
     const imgSuit = SUIT_IMAGES[suit.toLowerCase()];
-    const imgFigure = FIGURES_IMAGES[rank.toLowerCase()];
-    const count = parseInt(rank);
+    const imgFigure = FIGURES_IMAGES[rankStr];
+    const count = parseInt(rankStr);
     const layoutClass = findLayoutClass(count)
 
     return ( 

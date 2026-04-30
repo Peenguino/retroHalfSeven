@@ -48,6 +48,7 @@ const cardTitle = (value: String) => {
 const PlayingCard = ({ rank, suit, onClick }: CardProps) => {
 
   const imgSuit = SUIT_IMAGES[suit.toLowerCase()];
+  const rankStr = String(rank);
 
   return (
       <div 
@@ -58,11 +59,11 @@ const PlayingCard = ({ rank, suit, onClick }: CardProps) => {
       >
         
         <div className="card-corner top">
-          <div>{cardTitle(rank)}</div>
+          <div>{cardTitle(rankStr)}</div>
         </div>
 
         <CardCenter rank={rank} suit={suit}/>
-        {parseInt(rank) >= 8 ? (
+        {parseInt(rankStr) >= 8 ? (
           <div className="card-corner bottom">
             <img 
               src={imgSuit} 
