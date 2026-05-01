@@ -26,27 +26,18 @@ const COINS_IMAGES: Record<string, string> = {
     "-1": annullabutton
 };
 
-// Mockup di carte banco per testare il componente
-const dealerCards = [
-  { rank: "9", suit: "denari" },
-  { rank: "9", suit: "denari" },
-  { rank: "10", suit: "denari" },
-  { rank: "7", suit: "denari" },
-];
+// Helper per convertire le carte dal DB (con campi numerici) al formato UI (con campi stringa)
+function dbCardToCardProps(card: any): CardProps {
+  return {
+    rank: String(card.rank),
+    suit: card.suit.toLowerCase(),
+  };
+}
 
-// Mockup di una mano di carte per testare il componente
-const myCards = [
-  { rank: "9", suit: "denari" },
-  { rank: "1", suit: "denari" },
-  { rank: "8", suit: "denari" },
-];
-
-function ActionButton({ buttonType }: { buttonType: string }) {
-    return (
-        <button className='playing_button'>
-            {buttonType}
-        </button>
-    )
+// Helper per convertire array di carte dal DB al formato UI
+function dbCardsToCardProps(cards: any[]): CardProps[] {
+  if (!cards || !Array.isArray(cards)) return [];
+  return cards.map(dbCardToCardProps);
 }
 
 function ScoreVisualizer({ cards, owner }: HandProps) {
@@ -155,12 +146,25 @@ function TableContainer({
     const [getBettedFiches, setBettedFiches] = useState<FichesProps[]>([])
     const totalBet = getBettedFiches.reduce((acc, curr) => acc + curr.value, 0);
 
+    // State per indicare se un'azione è in corso (evita double-click)
+    const [isActionInProgress, setIsActionInProgress] = useState(false);
+
+    // State per gestire il busted: memorizza lo score quando sballa
+    const [bustedScore, setBustedScore] = useState<number | null>(null);
+
     // Stato del timer del pronto, con variabile per lo stato del giocatore
     const [timeLeft, setTimeLeft] = useState<number | null>(null)
     const isReady = currentPlayerStatus === 'ready'
 
     const isSpectator = currentPlayerStatus === 'spectating'
     const isMyTurn = currentTurnPlayerId === currentUserId
+
+    // useEffect per resettare bustedScore quando lo status cambia
+    useEffect(() => {
+        if (currentPlayerStatus !== 'busted') {
+            setBustedScore(null);
+        }
+    }, [currentPlayerStatus]);
 
     // useEffect per gestione timer pronto
     useEffect(() => {
@@ -272,6 +276,100 @@ function TableContainer({
         }
     };
 
+    // === Gestione tasto PESCA carta ===
+    const handleDrawCard = async () => {
+        if (!gameId || !isMyTurn || isActionInProgress) return;
+        
+        setIsActionInProgress(true);
+        try {
+            console.log("DRAW-CARD: Richiesta carta...");
+            const { data, error } = await supabase.functions.invoke('draw-card', {
+                body: { game_id: gameId }
+            });
+
+            if (error) {
+                console.error("Errore nel estrazione della carta:", error);
+                alert("Errore: " + (error.message || "Impossibile pescare la carta"));
+                setIsActionInProgress(false);
+                return;
+            }
+
+            if (data?.error) {
+                console.log("Errore dalla funzione:", data.error);
+                alert("Errore: " + data.error);
+                setIsActionInProgress(false);
+                return;
+            }
+
+            console.log("Carta pescata:", data.card, "Nuovo score:", data.new_score);
+            
+            // Se player va in busted, setta lo score di sballo e passa il turno automaticamente
+            if (data.busted) {
+                setBustedScore(data.new_score);
+                console.log("Giocatore sballato! Score:", data.new_score);
+                
+                // Attendi un breve delay per far vedere il componente di sballo, poi passa il turno
+                setTimeout(async () => {
+                    try {
+                        const { data: standData, error: standError } = await supabase.functions.invoke('stand-cards', {
+                            body: { game_id: gameId }
+                        });
+                        if (standError) {
+                            console.error("Errore nel passaggio turno automatico:", standError);
+                        } else {
+                            console.log("Turno passato automaticamente dopo sballo");
+                        }
+                    } catch (e) {
+                        console.error("Eccezione nel passaggio turno automatico:", e);
+                    } finally {
+                        setIsActionInProgress(false);
+                    }
+                }, 1500);
+            } else {
+                setIsActionInProgress(false);
+            }
+        } catch (error) {
+            console.error("Errore durante draw-card:", error);
+            alert("Errore imprevisto durante il pescamento");
+            setIsActionInProgress(false);
+        }
+    };
+
+    // === Gestione tasto STAI ===
+    const handleStand = async () => {
+        if (!gameId || !isMyTurn || isActionInProgress) return;
+        
+        setIsActionInProgress(true);
+        try {
+            console.log("STAND-CARDS: Effettuo stand del turno...");
+            const { data, error } = await supabase.functions.invoke('stand-cards', {
+                body: { game_id: gameId }
+            });
+
+            if (error) {
+                console.error("Errore nello stand del turno:", error);
+                alert("Errore: " + (error.message || "Impossibile passare turno"));
+                return;
+            }
+
+            if (data?.error) {
+                console.log("Errore dalla funzione:", data.error);
+                alert("Errore: " + data.error);
+                return;
+            }
+
+            console.log("Turno passato. Prossimo giocatore:", data.next_turn_user_id);
+            if (data.all_players_finished) {
+                console.log("Tutti i giocatori hanno finito. Il banco ora gioca...");
+            }
+        } catch (error) {
+            console.error("Errore durante stand-cards:", error);
+            alert("Errore imprevisto nel passaggio turno");
+        } finally {
+            setIsActionInProgress(false);
+        }
+    };
+
     return (
       <div className='table-container'>
 
@@ -311,8 +409,42 @@ function TableContainer({
             <div className="actions-area">
                 {isMyTurn ? (
                     <>
-                        <button className='playing_button'>CARTA</button>
-                        <button className='playing_button'>STAI</button>
+                        {/* === COMPONENTE PLAYER BUSTED === */}
+                        {bustedScore !== null && (
+                            <div style={{
+                                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'rgba(200, 0, 0, 0.9)', color: 'white', padding: '30px',
+                                borderRadius: '15px', zIndex: 20, textAlign: 'center', border: '3px solid #ff0000',
+                                boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)', fontSize: '24px', fontWeight: 'bold',
+                                animation: 'pulse 1.5s ease-in-out'
+                            }}>
+                                <div style={{ fontSize: '32px', marginBottom: '15px' }}>SBALLATO!</div>
+                                <div>Score: {bustedScore}</div>
+                            </div>
+                        )}
+
+                        <button 
+                            className='playing_button'
+                            onClick={handleDrawCard}
+                            disabled={isActionInProgress || currentPlayerStatus === 'busted'}
+                            style={{ 
+                                opacity: isActionInProgress || currentPlayerStatus === 'busted' ? 0.5 : 1, 
+                                cursor: isActionInProgress || currentPlayerStatus === 'busted' ? 'not-allowed' : 'pointer' 
+                            }}
+                        >
+                            {isActionInProgress ? 'In corso...' : 'CARTA'}
+                        </button>
+                        <button 
+                            className='playing_button'
+                            onClick={handleStand}
+                            disabled={isActionInProgress || currentPlayerStatus === 'busted'}
+                            style={{ 
+                                opacity: isActionInProgress || currentPlayerStatus === 'busted' ? 0.5 : 1, 
+                                cursor: isActionInProgress || currentPlayerStatus === 'busted' ? 'not-allowed' : 'pointer' 
+                            }}
+                        >
+                            {isActionInProgress ? 'In corso...' : currentPlayerStatus === 'busted' ? 'SBALLATO' : 'STAI'}
+                        </button>
                     </>
                 ) : (
                     <div style={{ color: 'white', fontSize: '18px', padding: '10px' }}>
@@ -390,6 +522,9 @@ export default function Playingpage() {
     // Hook per stato partita
     const [gameStatus, setGameStatus] = useState<string>('waiting')
 
+    // Hook per le carte del banco (realtime)
+    const [dealerCards, setDealerCards] = useState<CardProps[]>([])
+
     // Fetch del user ed estrazione dell'user.id
     // --- Non definiamo nessuna dipendenza nell'array secondo arg della useEffect: assumiamo che si debba eseguire ad ogni rirender
     useEffect(() => {
@@ -410,13 +545,14 @@ export default function Playingpage() {
 
             const { data: gameData } = await supabase
                 .from('games')
-                .select('target_start_time, current_turn_user_id, status') // Aggiungi status
+                .select('target_start_time, current_turn_user_id, status, dealer_cards')
                 .eq('id', gameId)
                 .single()
             if (gameData) {
                 setTargetStartTime(gameData.target_start_time)
                 setCurrentTurnPlayerId(gameData.current_turn_user_id)
-                setGameStatus(gameData.status) // <--- Salva lo stato
+                setGameStatus(gameData.status)
+                setDealerCards(dbCardsToCardProps(gameData.dealer_cards))
             }            
 
             const { data : playersData } = await supabase
@@ -468,6 +604,10 @@ export default function Playingpage() {
                     setTargetStartTime(payload.new.target_start_time)
                     setCurrentTurnPlayerId(payload.new.current_turn_user_id)
                     setGameStatus(payload.new.status)
+                    // === PUNTO 8: Aggiornamento dealer_cards in realtime ===
+                    if (payload.new.dealer_cards) {
+                        setDealerCards(dbCardsToCardProps(payload.new.dealer_cards))
+                    }
                 }
             )
             .subscribe((status) => {
@@ -492,9 +632,9 @@ export default function Playingpage() {
     return (
         <div className='outer-container'>
             <TableContainer 
-                playerCards={mainPlayer?.cards || []}
+                playerCards={dbCardsToCardProps(mainPlayer?.cards || [])}
                 dealerCards={dealerCards}
-                opponents={opponents}
+                opponents={opponents.map(opp => ({ ...opp, cards: dbCardsToCardProps(opp.cards || []) }))}
                 gameId={gameId}
                 currentPlayerStatus={mainPlayer?.status || 'waiting'}
                 targetStartTime={targetStartTime}
