@@ -36,4 +36,6 @@ export interface TableContainerProps {
     currentUserId: String | null;
     gameStatus: string;
     gameResults?: any | null;
+    userBalance?: number | null;
+    inviteCode?: string | null;
 }

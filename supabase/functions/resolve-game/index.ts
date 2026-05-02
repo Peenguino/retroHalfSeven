@@ -98,21 +98,24 @@ serve(async (req) => {
       let result = 'loss'; // di default è perdita
       let winnings = 0; // importo da corrispondere
 
-      // Se il giocatore ha già sballato
-      if (player.status === 'busted') {
+      // NUOVO CONTROLLO: calcoliamo se ha sballato guardando direttamente lo score!
+      const playerBusted = player.score > 7.5;
+
+      // Se il giocatore ha sballato (indipendentemente dal suo status)
+      if (playerBusted) {
         result = 'loss';
         winnings = 0; // perde la puntata (già detratta)
       }
-      // Se il banco sballa e il giocatore non sballa, il giocatore vince
-      else if (dealerBusted && player.status !== 'busted') {
+      // Se il banco sballa e il giocatore NON ha sballato
+      else if (dealerBusted) {
         result = 'win';
         winnings = player.bet * 2; // guadagna l'importo della puntata originale + la puntata
       }
-      // Se il banco non sballa, confronta i punteggi
-      else if (!dealerBusted) {
+      // Se NESSUNO dei due ha sballato, confronta i punteggi
+      else {
         if (player.score > finalDealerScore) {
           result = 'win';
-          winnings = player.bet * 2; // guadagna l'importo della puntata originale + la puntata
+          winnings = player.bet * 2; 
         } else if (player.score === finalDealerScore) {
           result = 'draw';
           winnings = player.bet; // recupera la puntata (pareggio = push)

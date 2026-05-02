@@ -120,6 +120,10 @@ serve(async (req) => {
 
       // Aggiorna il punteggio del banco per il prossimo ciclo
       game.dealer_score = newDealerScore;
+
+      // Delay di 1.2 sec banco per pescare nuova carta
+      await new Promise(resolve => setTimeout(resolve, 1200))
+
     }
 
     const finalDealerScore = calculateScore(dealerCards);

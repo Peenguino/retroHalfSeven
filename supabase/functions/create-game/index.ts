@@ -84,7 +84,6 @@ serve(async (req) => {
       .insert({
         game_id: game.id,
         user_id: user.id,
-        status: 'playing'
       });
 
     if (playerError) throw playerError;

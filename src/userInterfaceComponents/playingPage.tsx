@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './playingPage.css'
 import Hand from './handComponent'
 import DealerHand from './dealerComponent';
@@ -92,6 +92,9 @@ function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: numb
 }
 
 function OpponentHand({ cards, gridArea, rotationClass, status, isCurrentTurn }: OpponentProps) {
+
+    if (!status) return null;
+
     return (
         // Il contenitore che si posiziona nella cella della griglia
         <div className={`opponent-grid-cell ${isCurrentTurn ? 'active-turn' : ''}`} style={{ gridArea: gridArea }}>
@@ -140,7 +143,9 @@ function TableContainer({
     currentTurnPlayerId,
     currentUserId,
     gameStatus,
-    gameResults
+    gameResults,
+    userBalance,
+    inviteCode
 }: TableContainerProps) {
 
     // Mantengo lo stato delle fiches nel componente genitore, quindi TableContainer
@@ -153,7 +158,7 @@ function TableContainer({
     // State per gestire il busted: memorizza lo score quando sballa
     const [bustedScore, setBustedScore] = useState<number | null>(null);
 
-    // Stato del timer del pronto, con variabile per lo stato del giocatore
+    // State del timer del pronto, con variabile per lo stato del giocatore
     const [timeLeft, setTimeLeft] = useState<number | null>(null)
     const isReady = currentPlayerStatus === 'ready'
 
@@ -190,7 +195,7 @@ function TableContainer({
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [targetStartTime])
+    }, [targetStartTime, ])
 
     // useEffect per invocazione edge function start-game
     useEffect(() => {
@@ -221,7 +226,7 @@ function TableContainer({
     }, [timeLeft, gameId, isReady, gameStatus]);
 
     const handleAddFiche = (ficheValue: number) => {
-        if (isReady) return;
+        if (gameStatus !== 'waiting' || currentPlayerStatus !== 'waiting') return;
         setBettedFiches(prevFiches => [...prevFiches, {value: ficheValue}])
     };
 
@@ -230,52 +235,64 @@ function TableContainer({
         setBettedFiches(() => [])
     };
 
-    const handleReadyClick = async () => {
-        if (totalBet <= 0 ) return;
-        try {
+const handleReadyClick = async () => {
+    if (totalBet <= 0) return;
+    try {
+        if (isReady) {
+            // ==========================================
+            // TASTO ANNULLA (Rimborso e reset)
+            // ==========================================
+            console.log("Annullamento stato PRONTO e rimborso puntata...");
             
-            if (isReady) {
-                // Logica tasto annulla pronto
-                console.log("Annullamento stato PRONTO...");
-                const { error } = await supabase.functions.invoke('toggle-ready', {
-                    body: { game_id: gameId, is_ready: false }
-                });
-
-                if (error) throw error;
-                return;
-            }
-
-            // Logica tasto pronto
-            if (totalBet <= 0) return;
-            console.log("Piazzamento della puntata in corso...");
-            
-            const { data: betData, error: betError } = await supabase.functions.invoke('place-bet', {
-                body: { game_id: gameId, bet_amount: totalBet }
+            // 1. Chiamiamo la nuova lambda per il rimborso
+            const { data: cancelData, error: cancelError } = await supabase.functions.invoke('cancel-bet', {
+                body: { game_id: gameId }
             });
 
-            if (betError || (betData && betData.error)) {
-                console.error("Errore piazzamento puntata:", betError || betData.error);
-                alert("Errore durante la puntata: " + (betData?.error || "Fondi insufficienti?"));
+            if (cancelError || (cancelData && cancelData.error)) {
+                console.error("Errore durante l'annullamento della puntata:", cancelError || cancelData.error);
+                alert("Errore durante l'annullamento.");
                 return;
             }
 
-            console.log("Puntata piazzata! Imposto stato su pronto...");
-
-            const { data: readyData, error: readyError } = await supabase.functions.invoke('toggle-ready', {
-                body: { game_id: gameId, is_ready: true }
-            });
-
-            if (readyError || (readyData && readyData.error)) {
-                console.error("Errore cambio stato:", readyError || readyData.error);
-                return;
-            }
-
-            console.log("Sei PRONTO per giocare!");
-
-        } catch (error) {
-            console.error("Errore imprevisto:", error);
+            // 2. Resettiamo localmente la UI svuotando le fiches sul tavolo
+            setBettedFiches([]); 
+            console.log("Puntata annullata con successo!");
+            return;
         }
-    };
+
+        // ==========================================
+        // TASTO PRONTO (Conferma puntata)
+        // ==========================================
+        console.log("Piazzamento della puntata in corso...");
+        
+        const { data: betData, error: betError } = await supabase.functions.invoke('place-bet', {
+            body: { game_id: gameId, bet_amount: totalBet }
+        });
+
+        if (betError || (betData && betData.error)) {
+            console.error("Errore piazzamento puntata:", betError || betData.error);
+            alert("Errore durante la puntata: " + (betData?.error || "Fondi insufficienti?"));
+            return;
+        }
+
+        console.log("Puntata piazzata! Imposto stato su pronto...");
+
+        const { data: readyData, error: readyError } = await supabase.functions.invoke('toggle-ready', {
+            body: { game_id: gameId, is_ready: true }
+        });
+
+        if (readyError || (readyData && readyData.error)) {
+            console.error("Errore cambio stato:", readyError || readyData.error);
+            return;
+        }
+
+        console.log("Sei PRONTO per giocare!");
+
+    } catch (error) {
+        console.error("Errore imprevisto:", error);
+    }
+};
 
     // === Gestione tasto PESCA carta ===
     const handleDrawCard = async () => {
@@ -374,13 +391,26 @@ function TableContainer({
     return (
       <div className='table-container'>
 
+        {/* Gestione codice invito in alto a sinistra */}
+        {inviteCode && (
+            <div style={{
+                position: 'absolute', top: '15px', left: '15px', 
+                backgroundColor: 'rgba(0, 0, 0, 0.6)', color: 'white', 
+                padding: '8px 12px', borderRadius: '8px', zIndex: 10,
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontFamily: 'monospace', fontSize: '16px'
+            }}>
+                Codice Stanza: <strong style={{ color: '#ffd43b', letterSpacing: '2px' }}>{inviteCode}</strong>
+            </div>
+        )}
+
         {/* Gestione rendering opponents con posizione parametrica */}
         {opponents.map((opponent, index) => {
             if (index >= OPPONENT_SLOTS.length) return null;
             const slot = OPPONENT_SLOTS[index]
             return (
                 <OpponentHand
-                    key={opponent.user_id}
+                    key={`opponent-${opponent.user_id}`}
                     cards={opponent.cards || []}
                     gridArea={slot.gridArea}
                     rotationClass={slot.rotationClass}
@@ -428,7 +458,12 @@ function TableContainer({
                     backgroundColor: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '10px',
                     maxWidth: '600px', maxHeight: '400px', overflowY: 'auto'
                 }}>
-                    {gameResults.results.map((result: any, idx: number) => {
+                    {gameResults.results
+                        .filter((result: any) => 
+                            result.user_id === currentUserId || 
+                            opponents.some(opp => opp.user_id === result.user_id)
+                        )
+                        .map((result: any, idx: number) => {
                         const isCurrentPlayer = result.user_id === currentUserId;
                         const resultColor = result.result === 'win' ? '#51cf66' : result.result === 'draw' ? '#ffd43b' : '#ff6b6b';
                         const resultText = result.result === 'win' ? 'VINTO' : result.result === 'draw' ? 'PAREGGIO' : 'PERSO';
@@ -444,13 +479,13 @@ function TableContainer({
                                         <strong style={{ color: isCurrentPlayer ? '#ffff00' : 'white' }}>
                                             {isCurrentPlayer ? 'TU' : `Giocatore ${idx + 1}`}
                                         </strong>
-                                        <div style={{ fontSize: '14px', color: '#ccc' }}>Score: {result.score}</div>
+                                        <div style={{ color: '#ccc' }}>Score: {result.score}</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ color: resultColor, fontWeight: 'bold', fontSize: '16px' }}>
                                             {resultText}
                                         </div>
-                                        <div style={{ fontSize: '14px', color: '#aaa' }}>
+                                        <div style={{ color: '#aaa' }}>
                                             Puntata: {result.bet} | Vincita: +{result.winnings}
                                         </div>
                                     </div>
@@ -463,14 +498,6 @@ function TableContainer({
                 <div style={{ marginTop: '30px', fontSize: '16px', textAlign: 'center' }}>
                     <div>Montepremi totale: {gameResults.total_pot}</div>
                 </div>
-
-                <button 
-                    className='playing_button'
-                    style={{ marginTop: '30px', padding: '15px 40px', fontSize: '18px' }}
-                    disabled={true}
-                >
-                    In attesa della prossima mano...
-                </button>
             </div>
         ) : gameStatus === 'playing' ? (
             // === FASE DI GIOCO ATTIVA ===
@@ -562,6 +589,11 @@ function TableContainer({
         <div className='sum-score-fiches-area'>
             <ScoreVisualizer cards={playerCards} owner='Player' />
             <BettedFiches stackedFiches={getBettedFiches} />
+            {userBalance !== null && (
+                <div>
+                    {`Saldo: ${userBalance?.toFixed(2)}€`}
+                </div>
+            )}
         </div>
 
         {/* Aggiunta della classe active-turn alla player-area se è il nostro turno */}
@@ -593,18 +625,36 @@ export default function Playingpage() {
     // Hook per le carte del banco (realtime)
     const [dealerCards, setDealerCards] = useState<CardProps[]>([])
 
-    // === PUNTO 11: State per i risultati della mano (quando finished) ===
+    // Hook per i risultati della mano
     const [gameResults, setGameResults] = useState<any | null>(null)
-    // --- Non definiamo nessuna dipendenza nell'array secondo arg della useEffect: assumiamo che si debba eseguire ad ogni rirender
+
+    // Hook per il saldo utente
+    const [userBalance, setUserBalance] = useState<number | null>(null);
+
+    // Hook per codice invito
+    const [inviteCode, setInviteCode] = useState<string | null>(null)
+
+    // useEffect per credito utente
     useEffect(() => {
         const fetchUser = async () => {
             const { data : { user } } = await supabase.auth.getUser();
-            if (user) setCurrentUserId(user.id)
+            if (user) {
+                setCurrentUserId(user.id)
+
+                // Fetch al db del saldo
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('balance')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) setUserBalance(profile.balance)
+            }
         };
         fetchUser();
-    }, [])
+    }, [gameResults])
 
-    // useEffect che triggera resolve-game quando tutti i giocatori hanno finito ===
+    // useEffect che triggera resolve-game quando tutti i giocatori hanno finito
     useEffect(() => {
         if (!gameId || gameStatus !== 'playing' || players.length === 0) return;
 
@@ -612,28 +662,86 @@ export default function Playingpage() {
         const allPlayersFinished = players.every(p => p.status !== 'playing');
 
         if (allPlayersFinished) {
-            console.log("Tutti i giocatori hanno finito. Invocazione resolve-game...");
+            console.log("Tutti i giocatori hanno finito. Invocazione dealer-play e resolve-game...");
             
-            const triggerResolveGame = async () => {
+            const processEndGame = async () => {
                 try {
-                    const { data, error } = await supabase.functions.invoke('resolve-game', {
+                    // Gioca il banco (tramite dealer-play)
+                    console.log("Invocazione dealer-play...");
+                    const { error: dealerError } = await supabase.functions.invoke('dealer-play', {
                         body: { game_id: gameId }
                     });
-
-                    if (error) {
-                        console.error("Errore nel risolvimento della partita:", error);
-                    } else {
-                        console.log("Partita risolta:", data);
-                        setGameResults(data);
+                    
+                    if (dealerError) {
+                        console.error("Errore durante il turno del banco:", dealerError);
+                        return;
                     }
+
+                    const stillGameBeforeResolving = setTimeout(async () => {
+                        // Risoluzione partita (tramite resolve-game)
+                        console.log("Invocazione resolve-game...");
+                        const { data: resolveData, error: resolveError } = await supabase.functions.invoke('resolve-game', {
+                            body: { game_id: gameId }
+                        });
+    
+                        // Se ci sono più client, il primo che chiama resolve-game cambierà lo status 
+                        // in finished. I successivi riceveranno errore 400 "La partita non è già in corso".
+                        // Salviamo i risultati per la UI se la chiamata va a buon fine.
+                        if (resolveError) {
+                            console.error("Errore nel risolvimento della partita:", resolveError);
+                        } else if (resolveData && !resolveData.error) {
+                            console.log("Partita risolta:", resolveData);
+                            setGameResults(resolveData);
+                        }
+                    }, 7500)
+
+                    return () => clearTimeout(stillGameBeforeResolving)
+
                 } catch (err) {
-                    console.error("Eccezione durante resolve-game:", err);
+                    console.error("Eccezione durante la fine della partita:", err);
                 }
             };
 
-            triggerResolveGame();
+            processEndGame();
         }
     }, [gameId, gameStatus, players]);
+
+    // useEffect per l'invocazione di reset-and-restart per generazione nuova partita in automatico
+    useEffect(() => {
+        // Se la partita è finita, avviamo un timer per ricominciare
+        if (gameStatus === 'finished') {
+            console.log("Partita finita. Preparazione per la prossima mano...");
+            
+            const restartTimer = setTimeout(async () => {
+                try {
+                    // Usiamo playersRef per non triggerare loop infiniti, ma avere i dati aggiornati
+                    const currentPlayers = playersRef.current;
+                    const isRoomHost = currentPlayers.length > 0 && currentPlayers[0].user_id === currentUserId;
+                    
+                    if (isRoomHost) {
+                        console.log("Esecuzione reset-and-restart...");
+                        const { error } = await supabase.functions.invoke('reset-and-restart', {
+                            body: { game_id: gameId }
+                        });
+                        
+                        if (!error) setGameResults(null); 
+                    }
+                } catch (err) {
+                    console.error("Eccezione durante il reset-and-restart:", err);
+                }
+            }, 8000);
+
+            return () => clearTimeout(restartTimer);
+        }
+    }, [gameStatus, gameId, currentUserId]);
+
+
+    // UseEffect per cleanup della UI quando il backend resetta la partita tramite reset-and-restart
+    useEffect(() => {
+        if (gameStatus === 'waiting') {
+            setGameResults(null);
+        }
+    }, [gameStatus]);
 
     // UseEffect per la gestione dei channel, ossia API per webSocket di Supabase Realtime
     // --- In questo caso come dipendenza settiamo il gameId
@@ -645,7 +753,7 @@ export default function Playingpage() {
 
             const { data: gameData } = await supabase
                 .from('games')
-                .select('target_start_time, current_turn_user_id, status, dealer_cards')
+                .select('target_start_time, current_turn_user_id, status, dealer_cards, invite_code')
                 .eq('id', gameId)
                 .single()
             if (gameData) {
@@ -653,6 +761,7 @@ export default function Playingpage() {
                 setCurrentTurnPlayerId(gameData.current_turn_user_id)
                 setGameStatus(gameData.status)
                 setDealerCards(dbCardsToCardProps(gameData.dealer_cards))
+                setInviteCode(gameData.invite_code)
             }            
 
             const { data : playersData } = await supabase
@@ -669,23 +778,45 @@ export default function Playingpage() {
 
         channel
             .on(
-                // Listener su tutti i cambi sulla tabella game_players, dove matcha il corrente gameId
+                // Ascoltiamo INSERT con il filtro (normale)
                 'postgres_changes',
                 {
-                    event: '*',
+                    event: 'INSERT',
                     schema: 'public',
                     table: 'game_players',
                     filter: `game_id=eq.${gameId}`
                 },
                 (payload) => {
-                    console.log('Cambio in game_players:', payload);
-                    // Logica rispettivamente in caso di inserimento, aggiornamento o cancellazione nella
-                    // tabella game_players dove matcha il gameId
-                    if (payload.eventType === 'INSERT') {
-                        setPlayers(prev => [...prev, payload.new]);
-                    } else if (payload.eventType === 'UPDATE') {
-                        setPlayers(prev => prev.map(p => p.user_id === payload.new.user_id ? payload.new : p));
-                    } else if (payload.eventType === 'DELETE') {
+                    console.log('Nuovo giocatore:', payload);
+                    setPlayers(prev => [...prev, payload.new]);
+                }
+            )
+            .on(
+                // Ascoltiamo UPDATE con il filtro (normale)
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'game_players',
+                    filter: `game_id=eq.${gameId}`
+                },
+                (payload) => {
+                    console.log('Giocatore aggiornato:', payload);
+                    setPlayers(prev => prev.map(p => p.user_id === payload.new.user_id ? payload.new : p));
+                }
+            )
+            .on(
+                // Ascoltiamo DELETE SENZA filtro
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'game_players'
+                },
+                (payload) => {
+                    console.log('Giocatore rimosso (senza filtro):', payload);
+                    if (payload.old && payload.old.user_id) {
+                        // Rimuoviamo l'utente. Se è di un'altra partita, il filter non farà nulla.
                         setPlayers(prev => prev.filter(p => p.user_id !== payload.old.user_id));
                     }
                 }
@@ -724,6 +855,27 @@ export default function Playingpage() {
 
     }, [gameId])
 
+// Gestione disconnessione (chiusura tab o refresh)
+    useEffect(() => {
+        if (!currentUserId || !gameId) return;
+
+        const handleUnload = () => {
+            const payload = JSON.stringify({ user_id: currentUserId, game_id: gameId });
+            navigator.sendBeacon(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-disconnection`, payload);
+        };
+
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+        };
+    }, [currentUserId, gameId]);
+
+    const playersRef = useRef(players);
+    useEffect(() => {
+        playersRef.current = players;
+    }, [players]);
+
     const mainPlayer = players.find(player => player.user_id === currentUserId)
     const opponents = currentUserId 
         ? players.filter(player => player.user_id !== currentUserId)
@@ -742,6 +894,8 @@ export default function Playingpage() {
                 currentUserId={currentUserId}
                 gameStatus={gameStatus}
                 gameResults={gameResults}
+                userBalance={userBalance}
+                inviteCode={inviteCode}
             />
         </div>
     );
