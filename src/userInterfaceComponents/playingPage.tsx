@@ -139,7 +139,8 @@ function TableContainer({
     targetStartTime,
     currentTurnPlayerId,
     currentUserId,
-    gameStatus
+    gameStatus,
+    gameResults
 }: TableContainerProps) {
 
     // Mantengo lo stato delle fiches nel componente genitore, quindi TableContainer
@@ -404,6 +405,73 @@ function TableContainer({
                 <h3>Stai guardando la partita</h3>
                 <p>Entrerai in gioco automaticamente alla prossima mano.</p>
             </div>
+        ) : gameStatus === 'finished' && gameResults ? (
+            // === Overlay Risultati ===
+            <div style={{
+                position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+                backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 30,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '20px', overflowY: 'auto'
+            }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
+                    RISULTATI
+                </div>
+
+                <div style={{ fontSize: '18px', marginBottom: '30px', textAlign: 'center' }}>
+                    <div>Banco: <strong>{gameResults.dealer_score}</strong></div>
+                    <div style={{ color: gameResults.dealer_busted ? '#ff6b6b' : '#51cf66' }}>
+                        {gameResults.dealer_busted ? 'BANCO SBALLA' : 'BANCO NON SBALLA'}
+                    </div>
+                </div>
+
+                <div style={{
+                    backgroundColor: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '10px',
+                    maxWidth: '600px', maxHeight: '400px', overflowY: 'auto'
+                }}>
+                    {gameResults.results.map((result: any, idx: number) => {
+                        const isCurrentPlayer = result.user_id === currentUserId;
+                        const resultColor = result.result === 'win' ? '#51cf66' : result.result === 'draw' ? '#ffd43b' : '#ff6b6b';
+                        const resultText = result.result === 'win' ? 'VINTO' : result.result === 'draw' ? 'PAREGGIO' : 'PERSO';
+
+                        return (
+                            <div key={idx} style={{
+                                padding: '12px', marginBottom: '10px', borderLeft: `4px solid ${resultColor}`,
+                                backgroundColor: isCurrentPlayer ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                                borderRadius: '5px'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <strong style={{ color: isCurrentPlayer ? '#ffff00' : 'white' }}>
+                                            {isCurrentPlayer ? 'TU' : `Giocatore ${idx + 1}`}
+                                        </strong>
+                                        <div style={{ fontSize: '14px', color: '#ccc' }}>Score: {result.score}</div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ color: resultColor, fontWeight: 'bold', fontSize: '16px' }}>
+                                            {resultText}
+                                        </div>
+                                        <div style={{ fontSize: '14px', color: '#aaa' }}>
+                                            Puntata: {result.bet} | Vincita: +{result.winnings}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div style={{ marginTop: '30px', fontSize: '16px', textAlign: 'center' }}>
+                    <div>Montepremi totale: {gameResults.total_pot}</div>
+                </div>
+
+                <button 
+                    className='playing_button'
+                    style={{ marginTop: '30px', padding: '15px 40px', fontSize: '18px' }}
+                    disabled={true}
+                >
+                    In attesa della prossima mano...
+                </button>
+            </div>
         ) : gameStatus === 'playing' ? (
             // === FASE DI GIOCO ATTIVA ===
             <div className="actions-area">
@@ -525,7 +593,8 @@ export default function Playingpage() {
     // Hook per le carte del banco (realtime)
     const [dealerCards, setDealerCards] = useState<CardProps[]>([])
 
-    // Fetch del user ed estrazione dell'user.id
+    // === PUNTO 11: State per i risultati della mano (quando finished) ===
+    const [gameResults, setGameResults] = useState<any | null>(null)
     // --- Non definiamo nessuna dipendenza nell'array secondo arg della useEffect: assumiamo che si debba eseguire ad ogni rirender
     useEffect(() => {
         const fetchUser = async () => {
@@ -534,6 +603,37 @@ export default function Playingpage() {
         };
         fetchUser();
     }, [])
+
+    // useEffect che triggera resolve-game quando tutti i giocatori hanno finito ===
+    useEffect(() => {
+        if (!gameId || gameStatus !== 'playing' || players.length === 0) return;
+
+        // Controlla se tutti i giocatori hanno terminato
+        const allPlayersFinished = players.every(p => p.status !== 'playing');
+
+        if (allPlayersFinished) {
+            console.log("Tutti i giocatori hanno finito. Invocazione resolve-game...");
+            
+            const triggerResolveGame = async () => {
+                try {
+                    const { data, error } = await supabase.functions.invoke('resolve-game', {
+                        body: { game_id: gameId }
+                    });
+
+                    if (error) {
+                        console.error("Errore nel risolvimento della partita:", error);
+                    } else {
+                        console.log("Partita risolta:", data);
+                        setGameResults(data);
+                    }
+                } catch (err) {
+                    console.error("Eccezione durante resolve-game:", err);
+                }
+            };
+
+            triggerResolveGame();
+        }
+    }, [gameId, gameStatus, players]);
 
     // UseEffect per la gestione dei channel, ossia API per webSocket di Supabase Realtime
     // --- In questo caso come dipendenza settiamo il gameId
@@ -641,6 +741,7 @@ export default function Playingpage() {
                 currentTurnPlayerId={currentTurnPlayerId}
                 currentUserId={currentUserId}
                 gameStatus={gameStatus}
+                gameResults={gameResults}
             />
         </div>
     );

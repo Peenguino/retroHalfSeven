@@ -74,8 +74,7 @@ serve(async (req) => {
     const { data: players, error: playersError } = await supabaseAdmin
       .from('game_players')
       .select('*')
-      .eq('game_id', game_id)
-      .eq('status', 'ready');
+      .eq('game_id', game_id);
 
     if (playersError) {
       return new Response(
@@ -86,14 +85,40 @@ serve(async (req) => {
 
     if (!players || players.length === 0) {
       return new Response(
+        JSON.stringify({ error: "Nessun giocatore trovato" }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // Dividi i giocatori: ready vs non-ready
+    const readyPlayers = players.filter(p => p.status === 'ready');
+    const nonReadyPlayers = players.filter(p => p.status !== 'ready');
+
+    if (readyPlayers.length === 0) {
+      return new Response(
         JSON.stringify({ error: "Nessun giocatore pronto" }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Definizione mazzo, distribuzione carta per ciascun giocatore
+    // Converte i non-ready a spectating
+    for (const player of nonReadyPlayers) {
+      const { error: spectatorError } = await supabaseAdmin
+        .from('game_players')
+        .update({ status: 'spectating' })
+        .eq('game_id', game_id)
+        .eq('user_id', player.user_id);
+
+      if (spectatorError) {
+        console.error(`Errore nel convertire a spettatore ${player.user_id}:`, spectatorError);
+      } else {
+        console.log(`Giocatore ${player.user_id} convertito a spettatore`);
+      }
+    }
+
+    // Definizione mazzo, distribuzione carta per ciascun giocatore ready
     const deck = generateDeck();
-    for (const player of players) {
+    for (const player of readyPlayers) {
       const card = deck.pop();
       const { error: updateError } = await supabaseAdmin
         .from('game_players')
@@ -116,7 +141,7 @@ serve(async (req) => {
       .update({
         status: 'playing',
         deck: deck,
-        current_turn_user_id: players[0].user_id,
+        current_turn_user_id: readyPlayers[0].user_id,
         target_start_time: null
       })
       .eq('id', game_id);
@@ -129,7 +154,7 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ success: true }), 
+      JSON.stringify({ success: true, ready_players: readyPlayers.length, spectators: nonReadyPlayers.length }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 

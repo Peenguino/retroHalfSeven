@@ -35,4 +35,5 @@ export interface TableContainerProps {
     currentTurnPlayerId: string | null;
     currentUserId: String | null;
     gameStatus: string;
+    gameResults?: any | null;
 }
