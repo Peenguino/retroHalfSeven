@@ -87,8 +87,14 @@ serve(async (req) => {
 
     console.log(`Inizio reset. Giocatori totali: ${players.length}`);
 
-    // Aggiorna status di tutti i giocatori a 'waiting' e ripulisce i loro dati
+    // Aggiorna status di tutti i giocatori (ESCLUDENDO I DISCONNESSI) a 'waiting' e ripulisce i loro dati
     for (const player of players) {
+      // Salta i giocatori disconnessi (left)
+      if (player.status === 'left') {
+        console.log(`Giocatore ${player.user_id} ha status 'left', salta il reset`);
+        continue;
+      }
+
       const { error: updateError } = await supabaseAdmin
         .from('game_players')
         .update({

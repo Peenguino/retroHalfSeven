@@ -60,10 +60,13 @@ serve(async (req) => {
       .eq('id', user.id);
     if (updateProfileError) throw updateProfileError;
 
-    // Aggiorna il tavolo (piazza la puntata)
+    // Aggiorna il tavolo (piazza la puntata e cambia status a "ready")
     const { error: updateBetError } = await supabaseAdmin
       .from('game_players')
-      .update({ bet: bet_amount })
+      .update({ 
+        bet: bet_amount,
+        status: 'ready'
+      })
       .eq('game_id', game_id)
       .eq('user_id', user.id);
     if (updateBetError) throw updateBetError;

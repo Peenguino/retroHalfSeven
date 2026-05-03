@@ -27,7 +27,7 @@ const COINS_IMAGES: Record<string, string> = {
     "-1": annullabutton
 };
 
-// Helper per convertire le carte dal DB (con campi numerici) al formato UI (con campi stringa)
+// Convertitore carte database a proprieta UI
 function dbCardToCardProps(card: any): CardProps {
   return {
     rank: String(card.rank),
@@ -35,18 +35,16 @@ function dbCardToCardProps(card: any): CardProps {
   };
 }
 
-// Helper per convertire array di carte dal DB al formato UI
+// Convertitore array carte database a array proprieta UI
 function dbCardsToCardProps(cards: any[]): CardProps[] {
   if (!cards || !Array.isArray(cards)) return [];
   return cards.map(dbCardToCardProps);
 }
 
+// Visualizzatore del punteggio della mano
 function ScoreVisualizer({ cards, owner }: HandProps) {
-
     function calculateScore() {
-
         if (!cards) return 0;
-
         return cards.reduce((acc, card) => {
             const value = (card.rank === "8" || card.rank === "9" || card.rank === "10")
                 ? 0.5
@@ -65,8 +63,8 @@ function ScoreVisualizer({ cards, owner }: HandProps) {
     )
 }
 
+// Visualizzatore dell'importo totale puntato
 function BettedFiches({ stackedFiches }: BettedFichesProps) {
-
     function calculateBet() {
         const res = stackedFiches.reduce((acc, currFiches) => acc + currFiches.value, 0)
         return res
@@ -79,6 +77,7 @@ function BettedFiches({ stackedFiches }: BettedFichesProps) {
     )
 }
 
+// Singolo gettone cliccabile
 function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: number) => void }) {
     const imageSrc = COINS_IMAGES[value.toString()];
 
@@ -87,13 +86,13 @@ function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: numb
             className='fiche_container'
             onClick={() => onClickFiche(value)}
         >
-            <img src={imageSrc} />
+            <img src={imageSrc} alt={`Fiche ${value}`} />
         </div>
     )
 }
 
+// Gestione visiva della mano degli avversari in base alla posizione e allo stato
 function OpponentHand({ cards, gridArea, rotationClass, status, isCurrentTurn }: OpponentProps) {
-
     if (!status) return null;
 
     if (status === 'left') {
@@ -114,15 +113,11 @@ function OpponentHand({ cards, gridArea, rotationClass, status, isCurrentTurn }:
     }
 
     return (
-        // Il contenitore che si posiziona nella cella della griglia
         <div className={`opponent-grid-cell ${isCurrentTurn ? 'active-turn' : ''}`} style={{ gridArea: gridArea }}>
-            {/* Il wrapper che applica la rotazione senza occupare spazio fisico */}
             <div className={`opponent-rotation-wrapper ${rotationClass}`}>
                 {cards && cards.length > 0 ? (
-                    // Se ha carte, mostra le carte
                     <Hand cards={cards} />
                 ) : (
-                    // Se non ha carte (appena entrato), mostra un indicatore di presenza
                     <div style={{ 
                         width: '60px', 
                         height: '60px', 
@@ -151,6 +146,210 @@ const OPPONENT_SLOTS = [
     { gridArea: 'bottom-left', rotationClass: 'rotate-left' },
 ];
 
+// Header contenente il codice stanza
+function RoomCodeHeader({ inviteCode }: { inviteCode: string | null | undefined }) {
+    if (!inviteCode) return null;
+    return (
+        <div style={{
+            position: 'absolute', top: '15px', left: '15px', 
+            backgroundColor: 'rgba(0, 0, 0, 0.6)', color: 'white', 
+            padding: '8px 12px', borderRadius: '8px', zIndex: 10,
+            border: '1px solid rgba(255,255,255,0.2)',
+            fontFamily: 'Press Start 2P, cursive', fontSize: '16px'
+        }}>
+            Codice Stanza: <strong style={{ color: '#ffd43b', letterSpacing: '2px' }}>{inviteCode}</strong>
+        </div>
+    );
+}
+
+// Banner centrale mostrato ai giocatori in stato spettatore
+function SpectatorBanner() {
+    return (
+        <div className="spectator-banner" style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0,0,0,0.8)', color: 'white', padding: '20px',
+            borderRadius: '10px', zIndex: 10, textAlign: 'center', border: '2px solid gold',
+            marginTop: '50px'
+        }}>
+            <h3>Stai guardando la partita</h3>
+            <p>Entrerai in gioco automaticamente alla prossima mano.</p>
+        </div>
+    );
+}
+
+// Overlay visivo quando il punteggio supera il limite
+function PlayerBustedOverlay({ score }: { score: number | null }) {
+    if (score === null) return null;
+    return (
+        <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(200, 0, 0, 0.9)', color: 'white', padding: '30px',
+            borderRadius: '15px', zIndex: 20, textAlign: 'center', border: '3px solid #ff0000',
+            boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)', fontSize: '24px', fontWeight: 'bold',
+            animation: 'pulse 1.5s ease-in-out'
+        }}>
+            <div style={{ fontSize: '32px', marginBottom: '15px' }}>SBALLATO!</div>
+            <div>Score: {score}</div>
+        </div>
+    );
+}
+
+// Schermata di riepilogo a fine partita per vincite e perdite
+function ResultsOverlay({ gameResults, currentUserId, opponents }: any) {
+    if (!gameResults) return null;
+
+    return (
+        <div style={{
+            position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+            backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 30,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '20px', overflowY: 'auto'
+        }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
+                RISULTATI
+            </div>
+
+            <div style={{ fontSize: '18px', marginBottom: '30px', textAlign: 'center' }}>
+                <div>Banco: <strong>{gameResults.dealer_score}</strong></div>
+                <div style={{ color: gameResults.dealer_busted ? '#51cf66' : '#ff6b6b' }}>
+                    {gameResults.dealer_busted ? 'BANCO SBALLA' : 'BANCO NON SBALLA'}
+                </div>
+            </div>
+
+            <div style={{
+                backgroundColor: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '10px',
+                maxWidth: '600px', maxHeight: '400px', overflowY: 'auto'
+            }}>
+                {gameResults.results
+                    .filter((result: any) => 
+                        result.user_id === currentUserId || 
+                        opponents.some((opp: any) => opp.user_id === result.user_id)
+                    )
+                    .map((result: any, idx: number) => {
+                        const isCurrentPlayer = result.user_id === currentUserId; 
+                        
+                        // Identifico l'oggetto avversario specifico nell'array opponents
+                        const opponent = opponents.find((opp: any) => opp.user_id === result.user_id);
+                        
+                        // Valuto se lo status di questo specifico giocatore è 'left'
+                        const hasLeft = opponent?.status === 'left';                   
+                        
+                        // Modifico le costanti originali per intercettare il caso 'hasLeft' prima degli altri
+                        const resultColor = hasLeft 
+                            ? '#888888'
+                            : result.result === 'win' ? '#51cf66' : result.result === 'draw' ? '#ffd43b' : '#ff6b6b';
+                        
+                        const resultText = hasLeft 
+                            ? 'ABBANDONATO'
+                            : result.result === 'win' ? 'VINTO' : result.result === 'draw' ? 'PAREGGIO' : 'PERSO';
+                        
+                        return (
+                            <div key={idx} style={{
+                                padding: '12px', marginBottom: '10px', borderLeft: `4px solid ${resultColor}`,
+                                backgroundColor: isCurrentPlayer ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                                borderRadius: '5px',
+                                opacity: hasLeft ? 0.5 : 1 
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <strong style={{ 
+                                            // Cambio il colore in grigio e aggiungo textDecoration sbarrato se è uscito
+                                            color: isCurrentPlayer ? '#ffff00' : hasLeft ? '#888888' : 'white',
+                                        }}>
+                                            {isCurrentPlayer ? 'TU' : `Giocatore ${idx + 1}`}
+                                        </strong>
+                                        <div style={{ color: '#ccc' }}>Score: {result.score}</div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ color: resultColor, fontWeight: 'bold', fontSize: '16px' }}>
+                                            {resultText}
+                                        </div>
+                                        <div style={{ color: '#aaa' }}>
+                                            {/* Forzo la vincita mostrata a 0 se il giocatore ha abbandonato */}
+                                            Puntata: {result.bet} | Vincita: +{hasLeft ? '0' : result.winnings}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                })}
+            </div>
+        </div>
+    );
+}
+
+// Pannello dei comandi in partita per carta o stai
+function PlayActions({ isMyTurn, isActionInProgress, currentPlayerStatus, handleDrawCard, handleStand, bustedScore }: any) {
+    if (!isMyTurn) {
+        return (
+            <div style={{ color: 'white', fontSize: '18px', padding: '10px' }}>
+                In attesa banco e altri giocatori...
+            </div>
+        );
+    }
+
+    const isDisabled = isActionInProgress || currentPlayerStatus === 'busted';
+
+    return (
+        <>
+            <PlayerBustedOverlay score={bustedScore} />
+            <button 
+                className='playing_button'
+                onClick={handleDrawCard}
+                disabled={isDisabled}
+                style={{ opacity: isDisabled ? 0.5 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+            >
+                {'CARTA'}
+            </button>
+            <button 
+                className='playing_button'
+                onClick={handleStand}
+                disabled={isDisabled}
+                style={{ opacity: isDisabled ? 0.5 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+            >
+                {currentPlayerStatus === 'busted' ? 'SBALLATO' : 'STAI'}
+            </button>
+        </>
+    );
+}
+
+// Pannello di comando pre-partita per selezionare e confermare le fiches
+function BettingPhase({ handleAddFiche, handleResetFiche, timeLeft, isReady, totalBet, handleReadyClick }: any) {
+    return (
+        <>
+            <div className="score-coins">
+                <Fiches value={0.2} onClickFiche={handleAddFiche} />
+                <Fiches value={0.5} onClickFiche={handleAddFiche} />
+                <Fiches value={1} onClickFiche={handleAddFiche} />
+                <Fiches value={2} onClickFiche={handleAddFiche} />
+                <Fiches value={-1} onClickFiche={handleResetFiche} />
+            </div>
+
+            <div className="actions-area">
+                {timeLeft !== null && (
+                    <div style={{ color: 'white', marginBottom: '10px', fontSize: '18px', fontFamily: 'monospace' }}>
+                        {timeLeft > 0 ? `Inizio tra ${timeLeft}...` : "Iniziando..."}
+                    </div>
+                )}
+
+                <button 
+                    className='playing_button' 
+                    disabled={!isReady && totalBet <= 0} 
+                    onClick={handleReadyClick}
+                    style={{
+                        opacity: totalBet > 0 ? 1 : 0.5,
+                        cursor: totalBet > 0 ? 'pointer' : 'not-allowed',
+                        backgroundColor: isReady ? '#d9534f' : '' 
+                    }}
+                >
+                    {isReady ? 'ANNULLA' : 'PRONTO'}
+                </button>
+            </div>
+        </>
+    );
+}
+
+// Contenitore principale del tavolo con logica per API e stato temporaneo della UI
 function TableContainer({ 
     playerCards, 
     dealerCards,
@@ -166,33 +365,24 @@ function TableContainer({
     inviteCode
 }: TableContainerProps) {
 
-    // Mantengo lo stato delle fiches nel componente genitore, quindi TableContainer
     const [getBettedFiches, setBettedFiches] = useState<FichesProps[]>([])
     const totalBet = getBettedFiches.reduce((acc, curr) => acc + curr.value, 0);
 
-    // State per indicare se un'azione è in corso (evita double-click)
     const [isActionInProgress, setIsActionInProgress] = useState(false);
-
-    // State per gestire il busted: memorizza lo score quando sballa
     const [bustedScore, setBustedScore] = useState<number | null>(null);
-
-    // State del timer del pronto, con variabile per lo stato del giocatore
     const [timeLeft, setTimeLeft] = useState<number | null>(null)
-    const isReady = currentPlayerStatus === 'ready'
 
+    const isReady = currentPlayerStatus === 'ready'
     const isSpectator = currentPlayerStatus === 'spectating'
     const isMyTurn = currentTurnPlayerId === currentUserId
 
-    // useEffect per resettare bustedScore quando lo status cambia
     useEffect(() => {
         if (currentPlayerStatus !== 'busted') {
             setBustedScore(null);
         }
     }, [currentPlayerStatus]);
 
-    // useEffect per gestione timer pronto
     useEffect(() => {
-
         if (!targetStartTime) {
             setTimeLeft(null)
             return;
@@ -215,13 +405,10 @@ function TableContainer({
         return () => clearInterval(interval)
     }, [targetStartTime, ])
 
-    // useEffect per invocazione edge function start-game
     useEffect(() => {
         const triggerStartGame = async () => {
-            // Controlliamo che il timer sia a zero, che il gioco esista,
-            // - che siamo effettivamente pronti e che il gioco non sia già in esecuzione
             console.log("DEBUG start-game conditions:", { timeLeft, gameId, isReady, gameStatus });
-            if (timeLeft === 0 && gameId && isReady && gameStatus === 'waiting') {
+            if (timeLeft === 0 && gameId && gameStatus === 'waiting') {
                 console.log("Timer a 0. Richiedo l'inizio della partita...");
                 try {
                     const { data, error } = await supabase.functions.invoke('start-game', {
@@ -241,7 +428,7 @@ function TableContainer({
         };
 
         triggerStartGame();
-    }, [timeLeft, gameId, isReady, gameStatus]);
+    }, [timeLeft, gameId, gameStatus]);
 
     const handleAddFiche = (ficheValue: number) => {
         if (gameStatus !== 'waiting' || currentPlayerStatus !== 'waiting') return;
@@ -253,66 +440,57 @@ function TableContainer({
         setBettedFiches(() => [])
     };
 
-const handleReadyClick = async () => {
-    if (totalBet <= 0) return;
-    try {
-        if (isReady) {
-            // ==========================================
-            // TASTO ANNULLA (Rimborso e reset)
-            // ==========================================
-            console.log("Annullamento stato PRONTO e rimborso puntata...");
-            
-            // 1. Chiamiamo la nuova lambda per il rimborso
-            const { data: cancelData, error: cancelError } = await supabase.functions.invoke('cancel-bet', {
-                body: { game_id: gameId }
-            });
+    const handleReadyClick = async () => {
+        if (totalBet <= 0) return;
+        try {
+            if (isReady) {
+                console.log("Annullamento stato PRONTO e rimborso puntata...");
+                
+                const { data: cancelData, error: cancelError } = await supabase.functions.invoke('cancel-bet', {
+                    body: { game_id: gameId }
+                });
 
-            if (cancelError || (cancelData && cancelData.error)) {
-                console.error("Errore durante l'annullamento della puntata:", cancelError || cancelData.error);
-                alert("Errore durante l'annullamento.");
+                if (cancelError || (cancelData && cancelData.error)) {
+                    console.error("Errore durante l'annullamento della puntata:", cancelError || cancelData.error);
+                    alert("Errore durante l'annullamento.");
+                    return;
+                }
+
+                setBettedFiches([]); 
+                console.log("Puntata annullata con successo!");
                 return;
             }
 
-            // 2. Resettiamo localmente la UI svuotando le fiches sul tavolo
-            setBettedFiches([]); 
-            console.log("Puntata annullata con successo!");
-            return;
+            console.log("Piazzamento della puntata in corso...");
+            
+            const { data: betData, error: betError } = await supabase.functions.invoke('place-bet', {
+                body: { game_id: gameId, bet_amount: totalBet }
+            });
+
+            if (betError || (betData && betData.error)) {
+                console.error("Errore piazzamento puntata:", betError || betData.error);
+                alert("Errore durante la puntata: " + (betData?.error || "Fondi insufficienti?"));
+                return;
+            }
+
+            console.log("Puntata piazzata! Imposto stato su pronto...");
+
+            const { data: readyData, error: readyError } = await supabase.functions.invoke('toggle-ready', {
+                body: { game_id: gameId, is_ready: true }
+            });
+
+            if (readyError || (readyData && readyData.error)) {
+                console.error("Errore cambio stato:", readyError || readyData.error);
+                return;
+            }
+
+            console.log("Sei PRONTO per giocare!");
+
+        } catch (error) {
+            console.error("Errore imprevisto:", error);
         }
+    };
 
-        // ==========================================
-        // TASTO PRONTO (Conferma puntata)
-        // ==========================================
-        console.log("Piazzamento della puntata in corso...");
-        
-        const { data: betData, error: betError } = await supabase.functions.invoke('place-bet', {
-            body: { game_id: gameId, bet_amount: totalBet }
-        });
-
-        if (betError || (betData && betData.error)) {
-            console.error("Errore piazzamento puntata:", betError || betData.error);
-            alert("Errore durante la puntata: " + (betData?.error || "Fondi insufficienti?"));
-            return;
-        }
-
-        console.log("Puntata piazzata! Imposto stato su pronto...");
-
-        const { data: readyData, error: readyError } = await supabase.functions.invoke('toggle-ready', {
-            body: { game_id: gameId, is_ready: true }
-        });
-
-        if (readyError || (readyData && readyData.error)) {
-            console.error("Errore cambio stato:", readyError || readyData.error);
-            return;
-        }
-
-        console.log("Sei PRONTO per giocare!");
-
-    } catch (error) {
-        console.error("Errore imprevisto:", error);
-    }
-};
-
-    // === Gestione tasto PESCA carta ===
     const handleDrawCard = async () => {
         if (!gameId || !isMyTurn || isActionInProgress) return;
         
@@ -339,12 +517,10 @@ const handleReadyClick = async () => {
 
             console.log("Carta pescata:", data.card, "Nuovo score:", data.new_score);
             
-            // Se player va in busted, setta lo score di sballo e passa il turno automaticamente
             if (data.busted) {
                 setBustedScore(data.new_score);
                 console.log("Giocatore sballato! Score:", data.new_score);
                 
-                // Attendi un breve delay per far vedere il componente di sballo, poi passa il turno
                 setTimeout(async () => {
                     try {
                         const { data: standData, error: standError } = await supabase.functions.invoke('stand-cards', {
@@ -371,7 +547,6 @@ const handleReadyClick = async () => {
         }
     };
 
-    // === Gestione tasto STAI ===
     const handleStand = async () => {
         if (!gameId || !isMyTurn || isActionInProgress) return;
         
@@ -408,21 +583,8 @@ const handleReadyClick = async () => {
 
     return (
       <div className='table-container'>
+        <RoomCodeHeader inviteCode={inviteCode} />
 
-        {/* Gestione codice invito in alto a sinistra */}
-        {inviteCode && (
-            <div style={{
-                position: 'absolute', top: '15px', left: '15px', 
-                backgroundColor: 'rgba(0, 0, 0, 0.6)', color: 'white', 
-                padding: '8px 12px', borderRadius: '8px', zIndex: 10,
-                border: '1px solid rgba(255,255,255,0.2)',
-                fontFamily: 'monospace', fontSize: '16px'
-            }}>
-                Codice Stanza: <strong style={{ color: '#ffd43b', letterSpacing: '2px' }}>{inviteCode}</strong>
-            </div>
-        )}
-
-        {/* Gestione rendering opponents con posizione parametrica */}
         {opponents.map((opponent, index) => {
             if (index >= OPPONENT_SLOTS.length) return null;
             const slot = OPPONENT_SLOTS[index]
@@ -442,171 +604,39 @@ const handleReadyClick = async () => {
             <DealerHand cards={dealerCards} />
         </div>
 
-        
-
         {isSpectator ? (
-            <div className="spectator-banner" style={{
-                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                backgroundColor: 'rgba(0,0,0,0.8)', color: 'white', padding: '20px',
-                borderRadius: '10px', zIndex: 10, textAlign: 'center', border: '2px solid gold'
-            }}>
-                <h3>Stai guardando la partita</h3>
-                <p>Entrerai in gioco automaticamente alla prossima mano.</p>
-            </div>
+            <SpectatorBanner />
         ) : gameStatus === 'finished' && gameResults ? (
-            // === Overlay Risultati ===
-            <div style={{
-                position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
-                backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 30,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '20px', overflowY: 'auto'
-            }}>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
-                    RISULTATI
-                </div>
-
-                <div style={{ fontSize: '18px', marginBottom: '30px', textAlign: 'center' }}>
-                    <div>Banco: <strong>{gameResults.dealer_score}</strong></div>
-                    <div style={{ color: gameResults.dealer_busted ? '#51cf66' : '#ff6b6b' }}>
-                        {gameResults.dealer_busted ? 'BANCO SBALLA' : 'BANCO NON SBALLA'}
-                    </div>
-                </div>
-
-                <div style={{
-                    backgroundColor: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '10px',
-                    maxWidth: '600px', maxHeight: '400px', overflowY: 'auto'
-                }}>
-                    {gameResults.results
-                        .filter((result: any) => 
-                            result.user_id === currentUserId || 
-                            opponents.some(opp => opp.user_id === result.user_id)
-                        )
-                        .map((result: any, idx: number) => {
-                            
-                        const isCurrentPlayer = result.user_id === currentUserId;                    
-
-                        const hasLeft = opponents.some(opp => opp.user_id === result.user_id && opp.status === 'left')
-
-                        const resultColor = result.result === 'win' ? '#51cf66' : result.result === 'draw' ? '#ffd43b' : '#ff6b6b';
-                        const resultText = result.result === 'win' ? 'VINTO' : result.result === 'draw' ? 'PAREGGIO' : 'PERSO';
-
-                        return (
-                            <div key={idx} style={{
-                                padding: '12px', marginBottom: '10px', borderLeft: `4px solid ${resultColor}`,
-                                backgroundColor: isCurrentPlayer ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
-                                borderRadius: '5px'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <strong style={{ color: isCurrentPlayer ? '#ffff00' : 'white' }}>
-                                            {isCurrentPlayer ? 'TU' : `Giocatore ${idx + 1}`}
-                                        </strong>
-                                        <div style={{ color: '#ccc' }}>Score: {result.score}</div>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ color: resultColor, fontWeight: 'bold', fontSize: '16px' }}>
-                                            {resultText}
-                                        </div>
-                                        <div style={{ color: '#aaa' }}>
-                                            Puntata: {result.bet} | Vincita: +{result.winnings}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <div style={{ marginTop: '30px', fontSize: '16px', textAlign: 'center' }}>
-                    <div>Montepremi totale: {gameResults.total_pot}</div>
-                </div>
-            </div>
+            <ResultsOverlay 
+                gameResults={gameResults} 
+                currentUserId={currentUserId} 
+                opponents={opponents} 
+            />
         ) : gameStatus === 'playing' ? (
-            // === FASE DI GIOCO ATTIVA ===
             <div className="actions-area">
-                {isMyTurn ? (
-                    <>
-                        {/* === COMPONENTE PLAYER BUSTED === */}
-                        {bustedScore !== null && (
-                            <div style={{
-                                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                backgroundColor: 'rgba(200, 0, 0, 0.9)', color: 'white', padding: '30px',
-                                borderRadius: '15px', zIndex: 20, textAlign: 'center', border: '3px solid #ff0000',
-                                boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)', fontSize: '24px', fontWeight: 'bold',
-                                animation: 'pulse 1.5s ease-in-out'
-                            }}>
-                                <div style={{ fontSize: '32px', marginBottom: '15px' }}>SBALLATO!</div>
-                                <div>Score: {bustedScore}</div>
-                            </div>
-                        )}
-
-                        <button 
-                            className='playing_button'
-                            onClick={handleDrawCard}
-                            disabled={isActionInProgress || currentPlayerStatus === 'busted'}
-                            style={{ 
-                                opacity: isActionInProgress || currentPlayerStatus === 'busted' ? 0.5 : 1, 
-                                cursor: isActionInProgress || currentPlayerStatus === 'busted' ? 'not-allowed' : 'pointer' 
-                            }}
-                        >
-                            {isActionInProgress ? 'In corso...' : 'CARTA'}
-                        </button>
-                        <button 
-                            className='playing_button'
-                            onClick={handleStand}
-                            disabled={isActionInProgress || currentPlayerStatus === 'busted'}
-                            style={{ 
-                                opacity: isActionInProgress || currentPlayerStatus === 'busted' ? 0.5 : 1, 
-                                cursor: isActionInProgress || currentPlayerStatus === 'busted' ? 'not-allowed' : 'pointer' 
-                            }}
-                        >
-                            {isActionInProgress ? 'In corso...' : currentPlayerStatus === 'busted' ? 'SBALLATO' : 'STAI'}
-                        </button>
-                    </>
-                ) : (
-                    <div style={{ color: 'white', fontSize: '18px', padding: '10px' }}>
-                        In attesa degli altri giocatori...
-                    </div>
-                )}
+                <PlayActions 
+                    isMyTurn={isMyTurn}
+                    isActionInProgress={isActionInProgress}
+                    currentPlayerStatus={currentPlayerStatus}
+                    handleDrawCard={handleDrawCard}
+                    handleStand={handleStand}
+                    bustedScore={bustedScore}
+                />
             </div>
         ) : (
-            // === FASE DI PUNTATA (WAITING) ===
-            <>
-                <div className="score-coins">
-                    <Fiches value={0.2} onClickFiche={handleAddFiche} />
-                    <Fiches value={0.5} onClickFiche={handleAddFiche} />
-                    <Fiches value={1} onClickFiche={handleAddFiche} />
-                    <Fiches value={2} onClickFiche={handleAddFiche} />
-                    <Fiches value={-1} onClickFiche={handleResetFiche} />
-                </div>
-
-                <div className="actions-area">
-                    {timeLeft !== null && (
-                        <div style={{ color: 'white', marginBottom: '10px', fontSize: '18px', fontFamily: 'monospace' }}>
-                            {timeLeft > 0 ? `Inizio tra ${timeLeft}...` : "Iniziando..."}
-                        </div>
-                    )}
-
-                    <button 
-                        className='playing_button' 
-                        disabled={!isReady && totalBet <= 0} 
-                        onClick={handleReadyClick}
-                        style={{
-                            opacity: totalBet > 0 ? 1 : 0.5,
-                            cursor: totalBet > 0 ? 'pointer' : 'not-allowed',
-                            backgroundColor: isReady ? '#d9534f' : '' 
-                        }}
-                    >
-                        {isReady ? 'ANNULLA' : 'PRONTO'}
-                    </button>
-                </div>
-            </>
+            <BettingPhase 
+                handleAddFiche={handleAddFiche}
+                handleResetFiche={handleResetFiche}
+                timeLeft={timeLeft}
+                isReady={isReady}
+                totalBet={totalBet}
+                handleReadyClick={handleReadyClick}
+            />
         )}
 
         <div className='dealer-score-area'>
             <ScoreVisualizer cards={dealerCards} owner='Dealer' />
         </div>
-
 
         <div className='sum-score-fiches-area'>
             <ScoreVisualizer cards={playerCards} owner='Player' />
@@ -618,7 +648,6 @@ const handleReadyClick = async () => {
             )}
         </div>
 
-        {/* Aggiunta della classe active-turn alla player-area se è il nostro turno */}
         <div className={`player-area ${isMyTurn ? 'active-turn' : ''}`}>
             <Hand cards={playerCards} />
         </div>
@@ -627,46 +656,25 @@ const handleReadyClick = async () => {
     );
 }
 
+// Entrypoint della pagina che contiene la gestione Supabase, Realtime e Hooks globali
 export default function Playingpage() {
-    // Hook grazie al quale acquisiamo il gameId dal parametro :gameId della route
     const { gameId } = useParams()
-
-    // Hooks rispettivamente per userId e players
     const [currentUserId, setCurrentUserId] = useState<String | null>(null)
     const [players, setPlayers] = useState<any[]>([])
-
-    // Hook per data inizio timer pronto
     const [targetStartTime, setTargetStartTime] = useState<string | null>(null)
-
-    // Hook per tracciare a chi tocca in questo momento
     const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<string | null>(null)
-
-    // Hook per stato partita
     const [gameStatus, setGameStatus] = useState<string>('waiting')
-
-    // Hook per le carte del banco (realtime)
     const [dealerCards, setDealerCards] = useState<CardProps[]>([])
-
-    // Hook per i risultati della mano
     const [gameResults, setGameResults] = useState<any | null>(null)
-
-    // Hook per il saldo utente
     const [userBalance, setUserBalance] = useState<number | null>(null);
-
-    // Hook per codice invito
     const [inviteCode, setInviteCode] = useState<string | null>(null)
-
-    // Hook per navigazione verso home in caso di disconnessione host
     const navigate = useNavigate();
 
-    // useEffect per credito utente
     useEffect(() => {
         const fetchUser = async () => {
             const { data : { user } } = await supabase.auth.getUser();
             if (user) {
                 setCurrentUserId(user.id)
-
-                // Fetch al db del saldo
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('balance')
@@ -679,11 +687,9 @@ export default function Playingpage() {
         fetchUser();
     }, [gameResults])
 
-    // useEffect che triggera resolve-game quando tutti i giocatori hanno finito
     useEffect(() => {
         if (!gameId || gameStatus !== 'playing' || players.length === 0) return;
 
-        // Controlla se tutti i giocatori hanno terminato
         const allPlayersFinished = players.every(p => p.status !== 'playing');
 
         if (allPlayersFinished) {
@@ -691,7 +697,6 @@ export default function Playingpage() {
             
             const processEndGame = async () => {
                 try {
-                    // Gioca il banco (tramite dealer-play)
                     console.log("Invocazione dealer-play...");
                     const { error: dealerError } = await supabase.functions.invoke('dealer-play', {
                         body: { game_id: gameId }
@@ -703,15 +708,11 @@ export default function Playingpage() {
                     }
 
                     const stillGameBeforeResolving = setTimeout(async () => {
-                        // Risoluzione partita (tramite resolve-game)
                         console.log("Invocazione resolve-game...");
                         const { data: resolveData, error: resolveError } = await supabase.functions.invoke('resolve-game', {
                             body: { game_id: gameId }
                         });
     
-                        // Se ci sono più client, il primo che chiama resolve-game cambierà lo status 
-                        // in finished. I successivi riceveranno errore 400 "La partita non è già in corso".
-                        // Salviamo i risultati per la UI se la chiamata va a buon fine.
                         if (resolveError) {
                             console.error("Errore nel risolvimento della partita:", resolveError);
                         } else if (resolveData && !resolveData.error) {
@@ -731,15 +732,12 @@ export default function Playingpage() {
         }
     }, [gameId, gameStatus, players]);
 
-    // useEffect per l'invocazione di reset-and-restart per generazione nuova partita in automatico
     useEffect(() => {
-        // Se la partita è finita, avviamo un timer per ricominciare
         if (gameStatus === 'finished') {
             console.log("Partita finita. Preparazione per la prossima mano...");
             
             const restartTimer = setTimeout(async () => {
                 try {
-                    // Usiamo playersRef per non triggerare loop infiniti, ma avere i dati aggiornati
                     const currentPlayers = playersRef.current;
                     const isRoomHost = currentPlayers.length > 0 && currentPlayers[0].user_id === currentUserId;
                     
@@ -761,21 +759,16 @@ export default function Playingpage() {
     }, [gameStatus, gameId, currentUserId]);
 
 
-    // UseEffect per cleanup della UI quando il backend resetta la partita tramite reset-and-restart
     useEffect(() => {
         if (gameStatus === 'waiting') {
             setGameResults(null);
         }
     }, [gameStatus]);
 
-    // UseEffect per la gestione dei channel, ossia API per webSocket di Supabase Realtime
-    // --- In questo caso come dipendenza settiamo il gameId
     useEffect(() => {
         if (!gameId) return;
 
-        // Prima effettuiamo il fetch dei player e dei timer nella stanza
         const fetchInitialData = async () => {
-
             const { data: gameData } = await supabase
                 .from('games')
                 .select('target_start_time, current_turn_user_id, status, dealer_cards, invite_code')
@@ -798,12 +791,10 @@ export default function Playingpage() {
         }
         fetchInitialData();
 
-        // Effettivo utilizzo di channel realtime di Supabase
         const channel = supabase.channel(`game-${gameId}`)
 
         channel
             .on(
-                // Ascoltiamo INSERT con il filtro (normale)
                 'postgres_changes',
                 {
                     event: 'INSERT',
@@ -817,7 +808,6 @@ export default function Playingpage() {
                 }
             )
             .on(
-                // Ascoltiamo UPDATE con il filtro (normale)
                 'postgres_changes',
                 {
                     event: 'UPDATE',
@@ -831,7 +821,6 @@ export default function Playingpage() {
                 }
             )
             .on(
-                // Ascoltiamo DELETE SENZA filtro
                 'postgres_changes',
                 {
                     event: 'DELETE',
@@ -841,13 +830,11 @@ export default function Playingpage() {
                 (payload) => {
                     console.log('Giocatore rimosso (senza filtro):', payload);
                     if (payload.old && payload.old.user_id) {
-                        // Rimuoviamo l'utente. Se è di un'altra partita, il filter non farà nulla.
                         setPlayers(prev => prev.filter(p => p.user_id !== payload.old.user_id));
                     }
                 }
             )
             .on(
-                // Listener sulla tabella games per ricevere l'avvio del timer
                 'postgres_changes',
                 {
                     event: 'UPDATE',
@@ -860,7 +847,6 @@ export default function Playingpage() {
                     setTargetStartTime(payload.new.target_start_time)
                     setCurrentTurnPlayerId(payload.new.current_turn_user_id)
                     setGameStatus(payload.new.status)
-                    // === PUNTO 8: Aggiornamento dealer_cards in realtime ===
                     if (payload.new.dealer_cards) {
                         setDealerCards(dbCardsToCardProps(payload.new.dealer_cards))
                     }
@@ -873,14 +859,12 @@ export default function Playingpage() {
                 }
             });
 
-        // Ritorniamo la funzione di cleanup nel useEffect, in questo caso rimozione del channel realtime
         return () => {
             supabase.removeChannel(channel);
         };
 
     }, [gameId])
 
-    // Gestione disconnessione (chiusura tab o refresh)
     useEffect(() => {
         if (!currentUserId || !gameId) return;
 
