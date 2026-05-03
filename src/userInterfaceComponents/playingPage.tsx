@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from "react-router";
 import './playingPage.css'
 import Hand from './handComponent'
 import DealerHand from './dealerComponent';
@@ -94,6 +95,23 @@ function Fiches({ value, onClickFiche }: { value: number, onClickFiche: (v: numb
 function OpponentHand({ cards, gridArea, rotationClass, status, isCurrentTurn }: OpponentProps) {
 
     if (!status) return null;
+
+    if (status === 'left') {
+        return (
+            <div className={`opponent-grid-cell`} style={{ gridArea: gridArea }}>
+                <div className={`opponent-rotation-wrapper ${rotationClass}`}>
+                    <div style={{ 
+                        width: '60px', height: '60px', backgroundColor: 'rgba(50, 50, 50, 0.8)',
+                        borderRadius: '50%', border: '2px solid gray', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', color: 'gray',
+                        fontSize: '9px', textAlign: 'center'
+                    }}>
+                        USCITO
+                    </div>
+                </div>
+            </div>            
+        )
+    }
 
     return (
         // Il contenitore che si posiziona nella cella della griglia
@@ -449,7 +467,7 @@ const handleReadyClick = async () => {
 
                 <div style={{ fontSize: '18px', marginBottom: '30px', textAlign: 'center' }}>
                     <div>Banco: <strong>{gameResults.dealer_score}</strong></div>
-                    <div style={{ color: gameResults.dealer_busted ? '#ff6b6b' : '#51cf66' }}>
+                    <div style={{ color: gameResults.dealer_busted ? '#51cf66' : '#ff6b6b' }}>
                         {gameResults.dealer_busted ? 'BANCO SBALLA' : 'BANCO NON SBALLA'}
                     </div>
                 </div>
@@ -464,7 +482,11 @@ const handleReadyClick = async () => {
                             opponents.some(opp => opp.user_id === result.user_id)
                         )
                         .map((result: any, idx: number) => {
-                        const isCurrentPlayer = result.user_id === currentUserId;
+                            
+                        const isCurrentPlayer = result.user_id === currentUserId;                    
+
+                        const hasLeft = opponents.some(opp => opp.user_id === result.user_id && opp.status === 'left')
+
                         const resultColor = result.result === 'win' ? '#51cf66' : result.result === 'draw' ? '#ffd43b' : '#ff6b6b';
                         const resultText = result.result === 'win' ? 'VINTO' : result.result === 'draw' ? 'PAREGGIO' : 'PERSO';
 
@@ -633,6 +655,9 @@ export default function Playingpage() {
 
     // Hook per codice invito
     const [inviteCode, setInviteCode] = useState<string | null>(null)
+
+    // Hook per navigazione verso home in caso di disconnessione host
+    const navigate = useNavigate();
 
     // useEffect per credito utente
     useEffect(() => {
@@ -855,7 +880,7 @@ export default function Playingpage() {
 
     }, [gameId])
 
-// Gestione disconnessione (chiusura tab o refresh)
+    // Gestione disconnessione (chiusura tab o refresh)
     useEffect(() => {
         if (!currentUserId || !gameId) return;
 
@@ -875,6 +900,13 @@ export default function Playingpage() {
     useEffect(() => {
         playersRef.current = players;
     }, [players]);
+
+    useEffect(() => {
+        if (players.length > 0 && players[0].status === 'left') {
+            alert("L'host ha abbandonato la partita. La stanza è stata chiusa.");
+            navigate(`/`);
+        }
+    }, [players]);    
 
     const mainPlayer = players.find(player => player.user_id === currentUserId)
     const opponents = currentUserId 

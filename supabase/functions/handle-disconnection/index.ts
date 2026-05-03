@@ -9,9 +9,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-
   if (req.method === 'OPTIONS') {
-    console.log("OPTIONS request");
     return new Response('ok', { headers: corsHeaders });
   }
 
@@ -19,14 +17,35 @@ serve(async (req) => {
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    );
     
-    // ==========================================
-    // MODIFICA 1: Leggiamo il body come stringa per supportare sendBeacon
-    // ==========================================
+    // Gestione in raw per questione utilizzo beam lato frontend
     const rawBody = await req.text();
     const { user_id, game_id } = JSON.parse(rawBody);
 
+    if (!user_id || !game_id) {
+      return new Response(
+        JSON.stringify({ error: 'Dati mancanti' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Identifichiamo i giocatori per capire chi è l'host (il primo in ordine di joined_at)
+    const { data: allPlayers } = await supabaseAdmin
+        .from('game_players')
+        .select('user_id, status')
+        .eq('game_id', game_id)
+        .order('joined_at', { ascending: true });
+
+    const isHost = allPlayers && allPlayers.length > 0 && allPlayers[0].user_id === user_id;
+
+    if (isHost) {
+        // L'host esce: Terminiamo la partita per tutti
+        console.log("L'host ha abbandonato. Chiusura della partita.");
+        await supabaseAdmin.from('games').update({ status: 'finished' }).eq('id', game_id);
+    } 
+
+    // Gestione del passaggio turno (se non è l'host o se vogliamo comunque passare il turno)
     const { data: game } = await supabaseAdmin
       .from('games')
       .select('status, current_turn_user_id')
@@ -34,68 +53,40 @@ serve(async (req) => {
       .single();
 
     if (game && game.status === 'playing' && game.current_turn_user_id === user_id) {
-        const { data: activePlayers } = await supabaseAdmin
-            .from('game_players')
-            .select('user_id, status')
-            .eq('game_id', game_id)
-            .order('joined_at', { ascending: true });
-
-        if (activePlayers) {
-            const currentIndex = activePlayers.findIndex((p: any) => p.user_id === user_id);
+        if (allPlayers) {
+            const currentIndex = allPlayers.findIndex((p: any) => p.user_id === user_id);
             let nextPlayerId = null;
-            
-            for (let i = currentIndex + 1; i < activePlayers.length; i++) {
-                if (activePlayers[i].status === 'playing') {
-                    nextPlayerId = activePlayers[i].user_id;
+            for (let i = currentIndex + 1; i < allPlayers.length; i++) {
+                if (allPlayers[i].status === 'playing') {
+                    nextPlayerId = allPlayers[i].user_id;
                     break;
                 }
             }
-
             await supabaseAdmin
-                .from('games')
-                .update({ current_turn_user_id: nextPlayerId })
-                .eq('id', game_id);
+              .from('games')
+              .update({ current_turn_user_id: nextPlayerId })
+              .eq('id', game_id);
         }
     }    
 
-    if (!user_id || !game_id) {
-      return new Response(
-        JSON.stringify({ error: 'user_id e game_id sono obbligatori' }),
-        // MODIFICA 2: Aggiunti i corsHeaders
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log(`Disconnessione: user_id=${user_id}, game_id=${game_id}`)
-
-    const { error: deleteError } = await supabaseAdmin
+    // Facciamo UPDATE dello status a 'left'
+    const { error: updateError } = await supabaseAdmin
       .from('game_players')
-      .delete()
+      .update({ status: 'left' })
       .eq('user_id', user_id)
-      .eq('game_id', game_id)
+      .eq('game_id', game_id);
 
-    if (deleteError) {
-      console.error('Errore nella rimozione del giocatore:', deleteError)
-      return new Response(
-        JSON.stringify({ error: deleteError.message }),
-        // MODIFICA 2: Aggiunti i corsHeaders
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log(`Giocatore ${user_id} rimosso dalla partita ${game_id}`)
+    if (updateError) throw updateError;
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Giocatore disconnesso correttamente' }),
-      // MODIFICA 2: Aggiunti i corsHeaders
+      JSON.stringify({ success: true, message: 'Disconnessione (soft) avvenuta' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   } catch (error) {
-    console.error('Errore nella funzione handle-disconnect:', error)
+    console.error('Errore:', error);
     return new Response(
-      JSON.stringify({ error: 'Errore interno del server' }),
-      // MODIFICA 2: Aggiunti i corsHeaders
+      JSON.stringify({ error: 'Errore interno' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});
