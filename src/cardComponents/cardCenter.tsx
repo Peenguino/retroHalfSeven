@@ -8,8 +8,7 @@ import reImg from '../assets/exportedAssets/re.png';
 import cavalloImg from '../assets/exportedAssets/cavallo.png';
 import donnaImg from '../assets/exportedAssets/donna.png';
 
-
-import type { CardProps } from './types'
+import type { CardProps } from '../types'
 
 const SUIT_IMAGES: Record<string, string> = {
   bastoni: semeBastoni,

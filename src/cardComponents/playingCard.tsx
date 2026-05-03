@@ -1,5 +1,5 @@
 import './playingCard.css'
-import type { CardProps } from './types'
+import type { CardProps } from '../types'
 
 import semeDenari from '../assets/exportedAssets/semeDenari.png';
 import semeCoppe from '../assets/exportedAssets/semeCoppe.png';

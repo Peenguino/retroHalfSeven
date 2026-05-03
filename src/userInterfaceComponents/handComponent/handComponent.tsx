@@ -1,5 +1,5 @@
-import PlayingCard from '../cardComponents/playingCard';
-import { type CardProps } from '../cardComponents/types';
+import PlayingCard from '../../cardComponents/playingCard';
+import { type CardProps } from '../../types';
 import './handComponent.css';
 
 interface HandProps {

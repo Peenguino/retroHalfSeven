@@ -1,7 +1,7 @@
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import Homepage from './userInterfaceComponents/homePage'
-import Playingpage from './userInterfaceComponents/playingPage'
+import Playingpage from './userInterfaceComponents/playingPage/playingPage'
 
 function App() {
 

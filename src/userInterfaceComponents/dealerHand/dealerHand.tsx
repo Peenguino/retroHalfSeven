@@ -1,6 +1,6 @@
-import PlayingCard from '../cardComponents/playingCard';
-import { type CardProps } from '../cardComponents/types';
-import './dealerComponent.css';
+import PlayingCard from '../../cardComponents/playingCard';
+import { type CardProps } from '../../types';
+import './dealerHand.css';
 
 interface DealerProps {
   cards: CardProps[];
