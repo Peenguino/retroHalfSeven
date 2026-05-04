@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { type Session } from "@supabase/supabase-js";
 import { AuthComponent } from "../auth_supabase/authComponents";
+import HomepageFriendsList from "./friendshipsComponents/homepageFriendsList/homepageFriendsList";
 import { supabase } from "../auth_supabase/supabaseClient";
 
 export default function Homepage() {
@@ -54,33 +55,39 @@ export default function Homepage() {
             {!session ? (
                 <AuthComponent />
             ) : (
-                <div className="auth-card">
-                    <p className="welcome-text">
-                        BENVENUTO, <br/> {session.user.email}
-                    </p>
-                    
-                    {/* Sezione Creazione */}
-                    <button className='homepage-button' onClick={handleCreateGame} disabled={loading}>
-                        {loading ? "CARICAMENTO..." : "CREA PARTITA"}
-                    </button>
 
-                    <hr style={{ width: '100%', borderColor: '#000' }} />
+                <>
+                    <div className="auth-card">
+                        <p className="welcome-text">
+                            BENVENUTO, <br/> {session.user.email}
+                        </p>
+                        
+                        {/* Sezione Creazione */}
+                        <button className='homepage-button' onClick={handleCreateGame} disabled={loading}>
+                            {loading ? "CARICAMENTO..." : "CREA PARTITA"}
+                        </button>
 
-                    {/* Sezione Unisciti */}
-                    <input 
-                        type="text" 
-                        placeholder="CODICE INVITO" 
-                        value={inviteCode}
-                        onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    />
-                    <button className='homepage-button' onClick={handleJoinGame} disabled={loading || !inviteCode}>
-                        ENTRA NELLA LOBBY
-                    </button>
+                        <hr style={{ width: '100%', borderColor: '#000' }} />
 
-                    <button className='homepage-button' onClick={() => supabase.auth.signOut()} style={{ marginTop: '20px', backgroundColor: '#8b0000', color: '#fff' }}>
-                        ESCI
-                    </button>
-                </div>
+                        {/* Sezione Unisciti */}
+                        <input 
+                            type="text" 
+                            placeholder="CODICE INVITO" 
+                            value={inviteCode}
+                            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                        />
+                        <button className='homepage-button' onClick={handleJoinGame} disabled={loading || !inviteCode}>
+                            ENTRA NELLA LOBBY
+                        </button>
+
+                        <button className='homepage-button' onClick={() => supabase.auth.signOut()} style={{ marginTop: '20px', backgroundColor: '#8b0000', color: '#fff' }}>
+                            ESCI
+                        </button>
+                    </div>
+                    <HomepageFriendsList currentUserId={session.user.id} />
+
+                </>
+
             )}
         </div>
     );

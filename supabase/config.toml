@@ -536,3 +536,47 @@ entrypoint = "./functions/cancel-bet/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/cancel-bet/*.html" ]
+
+[functions.send-friend-request]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-friend-request/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/send-friend-request/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/send-friend-request/*.html" ]
+
+[functions.accept-friend-request]
+enabled = true
+verify_jwt = true
+import_map = "./functions/accept-friend-request/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/accept-friend-request/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/accept-friend-request/*.html" ]
+
+[functions.remove-friendship]
+enabled = true
+verify_jwt = true
+import_map = "./functions/remove-friendship/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/remove-friendship/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/remove-friendship/*.html" ]
+
+[functions.send-game-invite]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-game-invite/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/send-game-invite/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/send-game-invite/*.html" ]

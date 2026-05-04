@@ -8,6 +8,8 @@ import '../../userInterfaceComponents/handComponent/handComponent.css';
 import { type CardProps } from '../../types';
 import TableContainer from './tableContainer/tableContainer';
 
+import PlayingPageFriendsList from '../friendshipsComponents/playingpageFriendList/playingpageFriendList';
+
 // Convertitore carte database a proprieta UI
 function dbCardToCardProps(card: any): CardProps {
   return {
@@ -291,6 +293,14 @@ export default function Playingpage() {
                 userBalance={userBalance}
                 inviteCode={inviteCode}
             />
+
+            {currentUserId && inviteCode && (
+                <PlayingPageFriendsList
+                    currentUserId={currentUserId as string}
+                    inviteCode={inviteCode}
+                />
+            )}
+
         </div>
     );
 }
