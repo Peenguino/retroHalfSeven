@@ -116,6 +116,64 @@ self.addEventListener('fetch', (event: FetchEvent) => {
   );
 });
 
+// Evento Push - Gestione notifiche push ricevute
+self.addEventListener('push', (event: PushEvent) => {
+  console.log('[ServiceWorker] Push event received');
+
+  try {
+    const data = event.data?.json() ?? {};
+    const title = data.title || 'Retro Half Seven';
+    const options: NotificationOptions = {
+      body: data.body,
+      icon: data.icon,
+      badge: data.badge,
+      tag: data.tag, // Per deduplicazione notifiche con lo stesso tag
+      data: data.data,
+      requireInteraction: false,
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  } catch (error) {
+    console.error('[ServiceWorker] Errore parsing push event:', error);
+  }
+});
+
+// Evento Notification Click - Gestione click sulla notifica
+self.addEventListener('notificationclick', (event: NotificationEvent) => {
+  console.log('[ServiceWorker] Notification click event');
+  
+  event.notification.close();
+  const data = event.notification.data;
+
+  // Invito è per unirsi ad una partita
+  if (data?.action === 'JOIN_GAME') {
+    const url = `/?invite_code=${data.inviteCode}`;
+
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window' }).then((clientList) => {
+        // Cerca una finestra già aperta sulla home
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          const clientUrl = new URL(client.url);
+          
+          if (clientUrl.pathname === '/' || clientUrl.pathname === '') {
+            // Se è già aperta la home, focalizza e passa il parametro
+            client.postMessage({ 
+              type: 'INVITE_CODE', 
+              payload: { invite_code: data.inviteCode } 
+            });
+            return client.focus();
+          }
+        }
+        
+        // Altrimenti apri una nuova finestra sulla home
+        return self.clients.openWindow(url);
+      })
+    );
+  }
+});
 
 // Permetti TypeScript di usare estensioni Web Workers, evitando eventuali conflitti
 // con la normale visibilità ad esempio di Window ma lasciando l'utilizzo dei metodi specifici

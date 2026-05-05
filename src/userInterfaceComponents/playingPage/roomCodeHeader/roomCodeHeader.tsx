@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router";
-
 // Header contenente il codice stanza
 export default function RoomCodeHeader({ inviteCode }: { inviteCode: string | null | undefined }) {
     if (!inviteCode) return null;

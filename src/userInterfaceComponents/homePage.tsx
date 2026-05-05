@@ -1,6 +1,6 @@
 // src/userInterfaceComponents/homePage.tsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { type Session } from "@supabase/supabase-js";
 import { AuthComponent } from "../auth_supabase/authComponents";
 import HomepageFriendsList from "./friendshipsComponents/homepageFriendsList/homepageFriendsList";
@@ -12,6 +12,7 @@ export default function Homepage() {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(false);
     const [inviteCode, setInviteCode] = useState('');
+    const [searchParams] = useSearchParams();
 
     const isOffline = useOfflineStatus();
     const navigate = useNavigate();
@@ -21,6 +22,33 @@ export default function Homepage() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
         return () => subscription.unsubscribe();
     }, []);
+
+    // Leggi il query parameter invite_code e fai il join automatico
+    useEffect(() => {
+        const codeFromUrl = searchParams.get('invite_code');
+        if (codeFromUrl && session && !loading) {
+            console.log('[HomePage] Invite code from URL, auto-joining:', codeFromUrl);
+            handleJoinGameWithCode(codeFromUrl);
+        }
+    }, [searchParams, session]);
+
+    // Ascolta messaggi dal service worker (notificationclick)
+    useEffect(() => {
+        if (!('serviceWorker' in navigator)) return;
+
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'INVITE_CODE') {
+                const code = event.data.payload?.invite_code;
+                if (code && session && !loading) {
+                    console.log('[HomePage] Invite code from SW message, auto-joining:', code);
+                    handleJoinGameWithCode(code);
+                }
+            }
+        };
+
+        navigator.serviceWorker.addEventListener('message', handleMessage);
+        return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
+    }, [session, loading]);
 
     const handleCreateGame = async () => {
         setLoading(true);
@@ -36,20 +64,25 @@ export default function Homepage() {
         }
     };
 
-    const handleJoinGame = async () => {
-        if (!inviteCode) return;
+    const handleJoinGameWithCode = async (code: string) => {
         setLoading(true);
         try {
             const { data, error } = await supabase.functions.invoke('join-game', {
-                body: { invite_code: inviteCode }
+                body: { invite_code: code }
             });
             if (error) throw error;
             navigate(`/playingpage/${data.game_id}`);
         } catch (err) {
+            console.error("Errore join game:", err);
             alert("Codice non valido o partita piena");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleJoinGame = async () => {
+        if (!inviteCode) return;
+        await handleJoinGameWithCode(inviteCode);
     };
 
     return (

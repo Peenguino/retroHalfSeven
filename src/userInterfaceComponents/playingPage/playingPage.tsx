@@ -324,6 +324,7 @@ export default function Playingpage() {
                 <PlayingPageFriendsList
                     currentUserId={currentUserId as string}
                     inviteCode={inviteCode}
+                    gameId={gameId as string}
                 />
             )}
 

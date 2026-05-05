@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../auth_supabase/supabaseClient';
 
-export default function PlayingPageFriendsList({ currentUserId, inviteCode }: { currentUserId: string, inviteCode: string }) {
+export default function PlayingPageFriendsList({ currentUserId, inviteCode, gameId }: { currentUserId: string, inviteCode: string, gameId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [friends, setFriends] = useState<any[]>([]);
     const [invitedIds, setInvitedIds] = useState<string[]>([]); // Per feedback visivo
@@ -58,7 +58,8 @@ export default function PlayingPageFriendsList({ currentUserId, inviteCode }: { 
                 body: { 
                     inviter_id: currentUserId, 
                     invitee_id: friendId, 
-                    invite_code: inviteCode 
+                    invite_code: inviteCode,
+                    game_id: gameId
                 }
             });
 

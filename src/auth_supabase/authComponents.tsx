@@ -27,7 +27,7 @@ export function AuthComponent() {
 
   // Funzione per gestire i login con provider esterni (Google, Discord)
   const handleOAuthLogin = async (provider: Provider) => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data: _data, error } = await supabase.auth.signInWithOAuth({
       provider,
     });
     if (error) console.error(`Errore di login con ${provider}:`, error.message);
