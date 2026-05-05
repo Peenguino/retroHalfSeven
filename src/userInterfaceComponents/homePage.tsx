@@ -4,12 +4,16 @@ import { useNavigate } from "react-router";
 import { type Session } from "@supabase/supabase-js";
 import { AuthComponent } from "../auth_supabase/authComponents";
 import HomepageFriendsList from "./friendshipsComponents/homepageFriendsList/homepageFriendsList";
+import { useOfflineStatus } from "../utils/useOfflineStatus";
 import { supabase } from "../auth_supabase/supabaseClient";
+import { OfflineBanner } from "./offlineBanner/offlineBanner";
 
 export default function Homepage() {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(false);
     const [inviteCode, setInviteCode] = useState('');
+
+    const isOffline = useOfflineStatus();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,13 +61,15 @@ export default function Homepage() {
             ) : (
 
                 <>
+                    <OfflineBanner variant="simple" />
+
                     <div className="auth-card">
                         <p className="welcome-text">
                             BENVENUTO, <br/> {session.user.email}
                         </p>
                         
                         {/* Sezione Creazione */}
-                        <button className='homepage-button' onClick={handleCreateGame} disabled={loading}>
+                        <button className='homepage-button' onClick={handleCreateGame} disabled={loading || isOffline}>
                             {loading ? "CARICAMENTO..." : "CREA PARTITA"}
                         </button>
 
@@ -74,18 +80,18 @@ export default function Homepage() {
                             type="text" 
                             placeholder="CODICE INVITO" 
                             value={inviteCode}
+                            disabled={isOffline}
                             onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                         />
-                        <button className='homepage-button' onClick={handleJoinGame} disabled={loading || !inviteCode}>
+                        <button className='homepage-button' onClick={handleJoinGame} disabled={loading || !inviteCode || isOffline}>
                             ENTRA NELLA LOBBY
                         </button>
 
-                        <button className='homepage-button' onClick={() => supabase.auth.signOut()} style={{ marginTop: '20px', backgroundColor: '#8b0000', color: '#fff' }}>
+                        <button className='homepage-button' onClick={() => supabase.auth.signOut()} disabled={isOffline} style={{ marginTop: '20px', backgroundColor: '#8b0000', color: '#fff' } }>
                             ESCI
                         </button>
                     </div>
                     <HomepageFriendsList currentUserId={session.user.id} />
-
                 </>
 
             )}

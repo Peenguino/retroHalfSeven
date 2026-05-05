@@ -2,6 +2,9 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from "react-router";
 import { supabase } from '../../auth_supabase/supabaseClient';
 
+import { useOfflineStatus } from '../../utils/useOfflineStatus';
+import { OfflineBanner } from '../offlineBanner/offlineBanner';
+
 import './playingPage.css'
 import '../../userInterfaceComponents/handComponent/handComponent.css';
 
@@ -36,7 +39,21 @@ export default function Playingpage() {
     const [gameResults, setGameResults] = useState<any | null>(null)
     const [userBalance, setUserBalance] = useState<number | null>(null);
     const [inviteCode, setInviteCode] = useState<string | null>(null)
+
     const navigate = useNavigate();
+    const isOffline = useOfflineStatus();
+
+    // useEffect per fallback pieno alla homepage
+    useEffect(() => {
+        let timeout: number;
+        if (isOffline) {
+            // Aspetta per far leggere il banner, poi torna alla home
+            timeout = setTimeout(() => {
+                navigate('/');
+            }, 4500);
+        }
+        return () => clearTimeout(timeout);
+    }, [isOffline, navigate]);
 
     // Dato l'utilizzo dei time in funzioni asincrone successive definite con le setTimeout uso in combinazione
     // useRef e useEffect per garantire che l'accesso ai dati sia fatto su quelli più recenti disponibili
@@ -276,6 +293,15 @@ export default function Playingpage() {
     const opponents = currentUserId 
         ? players.filter(player => player.user_id !== currentUserId)
         : [];
+
+    // Se è offline, sovrapponi il tuo OfflineBanner warning e blocca l'interfaccia
+    if (isOffline) {
+        return (
+        <div className="offline-overlay" style={{ height: '100vh', backgroundColor: '#000' }}>
+            <OfflineBanner variant="warning" />
+        </div>
+        );
+    }
 
     return (
         <div className='outer-container'>

@@ -95,7 +95,7 @@ export default function PlayingPageFriendsList({ currentUserId, inviteCode }: { 
             </button>
 
             <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '15px', textAlign: 'center' }}>
-                INVITA AMICI
+                Invita Amici
             </div>
 
             <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px', overflowY: 'auto' }}>
@@ -120,7 +120,7 @@ export default function PlayingPageFriendsList({ currentUserId, inviteCode }: { 
                                         fontSize: '12px', fontWeight: 'bold'
                                     }}
                                 >
-                                    {isInvited ? 'Invitato' : 'Invita'}
+                                    ✓
                                 </button>
                             </div>
                         );

@@ -53,8 +53,8 @@ serve(async (req) => {
           .single();
 
       if (gameData && gameData.status === 'waiting') {
-        // Se tutti sono pronti, imposta il timer per l'avvio
-        if (allReady && !gameData.target_start_time) {
+        // Se tutti sono pronti, imposta il timer breve per l'avvio
+        if (allReady) {
               console.log("Tutti i giocatori sono pronti. Imposto il timer.");
               const targetTime = new Date();
               targetTime.setSeconds(targetTime.getSeconds() + 3);
@@ -66,10 +66,10 @@ serve(async (req) => {
         } 
         // Se c'è almeno un pronto e il timer NON è ancora stato settato allora viene settato il timer
         else if (anyReady && !allReady && !gameData.target_start_time) {
-          // Imposta il timer a +15 secondi
+          // Imposta il timer
           console.log("Almeno un giocatore è pronto. Imposto il timer.");
           const targetTime = new Date();
-          targetTime.setSeconds(targetTime.getSeconds() + 15);
+          targetTime.setSeconds(targetTime.getSeconds() + 10);
 
           await supabaseAdmin
             .from('games')
