@@ -13,10 +13,12 @@
 html, body {
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* Blocca definitivamente la scrollbar */
-  background-color: var(--bg);
+  margin: 0;
+  padding: 0;
+  overflow: hidden; 
+  background-color: #0a512f;
   color: var(--text);
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Press Start 2P', cursive;
 }
 
 #root {
@@ -29,19 +31,19 @@ html, body {
 /* authComponents.css */
 
 .homepage-container {
-    /* Centratura a tutto schermo, simile al tuo .outer-container */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    width: 100%;
     
-    /* Usiamo il verde del tavolo come sfondo principale */
-    background-color: #338518; 
+    /* Pulizia delle altezze e larghezze contrastanti */
+    width: 100%;
+    height: 100%; 
+    
     font-family: 'Press Start 2P', cursive;
     gap: 20px;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 /* --- Stile degli Input (Email, Password) --- */
@@ -124,6 +126,31 @@ html, body {
     /* Larghezza massima per non farlo troppo grande su desktop */
     max-width: 450px;
     width: 60%;
+    
+    /* Spazio tra gli elementi interni (titolo, input, bottoni) */
+    gap: 20px;
+}
+
+.homepage-game-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    background-color: #112809; 
+    
+    /* Padding generoso per dare respiro agli elementi interni */
+    padding: 30px 30px;
+    
+    /* Bordi stondati e spessi in stile retro */
+    border: 5px solid #000000;
+    border-radius: 20px;
+    
+    /* Ombra netta per l'effetto 3D */
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.3);
+    
+    /* Larghezza massima per non farlo troppo grande su desktop */
+    max-width: 850px;
     
     /* Spazio tra gli elementi interni (titolo, input, bottoni) */
     gap: 20px;

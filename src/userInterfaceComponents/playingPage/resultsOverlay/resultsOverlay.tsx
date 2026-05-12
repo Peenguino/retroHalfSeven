@@ -4,7 +4,7 @@ export default function ResultsOverlay({ gameResults, currentUserId, opponents }
     
     return (
         <div style={{
-            position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+            position: 'fixed', top: '0', left: '0', right: '0', bottom: '0',
             backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 30,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: '20px', overflowY: 'auto'
@@ -14,7 +14,7 @@ export default function ResultsOverlay({ gameResults, currentUserId, opponents }
             </div>
 
             <div style={{ fontSize: '18px', marginBottom: '30px', textAlign: 'center' }}>
-                <div>Banco: <strong>{gameResults.dealer_score}</strong></div>
+                <div style={ {marginBottom: '10px'} }>Banco: <strong>{gameResults.dealer_score}</strong></div>
                 <div style={{ color: gameResults.dealer_busted ? '#51cf66' : '#ff6b6b' }}>
                     {gameResults.dealer_busted ? 'BANCO SBALLA' : 'BANCO NON SBALLA'}
                 </div>
@@ -22,7 +22,7 @@ export default function ResultsOverlay({ gameResults, currentUserId, opponents }
 
             <div style={{
                 backgroundColor: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '10px',
-                maxWidth: '600px', maxHeight: '400px', overflowY: 'auto'
+                maxWidth: '900px', maxHeight: '400px', overflowY: 'auto'
             }}>
                 {gameResults.results
                     .filter((result: any) => 
@@ -51,12 +51,12 @@ export default function ResultsOverlay({ gameResults, currentUserId, opponents }
                     
                     return (
                         <div key={idx} style={{
-                                padding: '12px', marginBottom: '10px', borderLeft: `4px solid ${resultColor}`,
+                                padding: '16px', marginBottom: '15px', borderLeft: `4px solid ${resultColor}`,
                                 backgroundColor: isCurrentPlayer ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
                                 borderRadius: '5px',
                                 opacity: hasLeft ? 0.5 : 1 
                             }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '30px' }}>
                                     <div>
 
                                         <strong style={{ 

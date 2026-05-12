@@ -206,7 +206,7 @@ export default function HomepageFriendsList({ currentUserId }: { currentUserId: 
                     onClick={() => setIsOpen(!isOpen)}
                     style={{
                         position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)',
-                        width: '40px', height: '60px', backgroundColor: 'rgba(0,0,0,0.95)',
+                        width: '40px', height: '60px', backgroundColor: 'transparent',
                         border: '1px solid rgba(255,255,255,0.1)', borderRight: 'none',
                         color: 'white', cursor: 'pointer', borderRadius: '10px 0 0 10px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'

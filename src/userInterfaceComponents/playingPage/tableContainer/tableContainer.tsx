@@ -264,7 +264,7 @@ export default function TableContainer({
 
     return (
       <div className='table-container'>
-        <RoomCodeHeader inviteCode={inviteCode} />
+        <RoomCodeHeader inviteCode={inviteCode} gameId={gameId} currentUserId={currentUserId} />
 
         {opponents.map((opponent, index) => {
             if (index >= OPPONENT_SLOTS.length) return null;

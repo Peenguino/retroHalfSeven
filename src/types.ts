@@ -33,7 +33,7 @@ export interface TableContainerProps {
     currentPlayerStatus: string;
     targetStartTime: string | null;
     currentTurnPlayerId: string | null;
-    currentUserId: String | null;
+    currentUserId: string | null;
     gameStatus: string;
     gameResults?: any | null;
     userBalance?: number | null;

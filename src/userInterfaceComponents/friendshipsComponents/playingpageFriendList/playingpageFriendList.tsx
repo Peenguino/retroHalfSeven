@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../auth_supabase/supabaseClient';
 
+import './playingpageFriendList.css'
+
 export default function PlayingPageFriendsList({ currentUserId, inviteCode, gameId }: { currentUserId: string, inviteCode: string, gameId: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [friends, setFriends] = useState<any[]>([]);
@@ -74,51 +76,40 @@ export default function PlayingPageFriendsList({ currentUserId, inviteCode, game
     };
 
     return (
-        <div style={{
-            position: 'fixed', top: '100px', right: isOpen ? 0 : '-300px', width: '300px', height: 'auto', maxHeight: '60vh',
-            backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 40,
-            transition: 'right 0.3s ease-in-out', border: '1px solid rgba(255,255,255,0.1)',
-            borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', flexDirection: 'column', padding: '15px',
-            boxShadow: '-5px 5px 15px rgba(0,0,0,0.5)'
+        <div className='friend-list' 
+            style={{
+            right: isOpen ? 0 : '-300px'
         }}>
-            {/* Bottone Freccia */}
+            {/* Bottone Freccia: permette apertura che chiusura del menù amici */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    position: 'absolute', left: '-30px', top: '20px',
-                    width: '30px', height: '50px', backgroundColor: 'rgba(0,0,0,0.95)',
-                    border: '1px solid rgba(255,255,255,0.1)', borderRight: 'none',
-                    color: 'white', cursor: 'pointer', borderRadius: '5px 0 0 5px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px'
-                }}
+                className='arrow-button-friend-list'
             >
                 {isOpen ? '▶' : '◀'}
             </button>
 
-            <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '15px', textAlign: 'center' }}>
+            <div className='invite-friend-title'>
                 Invita Amici
             </div>
 
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px', overflowY: 'auto' }}>
+            <div className='friend-row-container'>
                 {friends.length === 0 ? (
-                    <div style={{ color: '#888', textAlign: 'center', padding: '10px', fontSize: '14px' }}>
+                    <div className='no-friend-row'>
                         Nessun amico trovato.
                     </div>
                 ) : (
                     friends.map(friend => {
                         const isInvited = invitedIds.includes(friend.id);
                         return (
-                            <div key={friend.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div key={friend.id} className='friend-row'>
                                 <span>{friend.username}</span>
                                 <button 
                                     onClick={() => handleInviteFriend(friend.id)} 
                                     disabled={isInvited}
+                                    className='invite-button'
                                     style={{
-                                        backgroundColor: isInvited ? '#868e96' : '#51cf66', 
-                                        color: '#000', border: 'none',
-                                        padding: '5px 10px', borderRadius: '5px', 
-                                        cursor: isInvited ? 'default' : 'pointer', 
-                                        fontSize: '12px', fontWeight: 'bold'
+                                        backgroundColor: isInvited ? '#868e96' : '#51cf66',
+                                        cursor: isInvited ? 'default' : 'pointer'
                                     }}
                                 >
                                     ✓

@@ -96,9 +96,9 @@ export default function Homepage() {
                 <>
                     <OfflineBanner variant="simple" />
 
-                    <div className="auth-card">
+                    <div className="homepage-game-card">
                         <p className="welcome-text">
-                            BENVENUTO, <br/> {session.user.email}
+                            Username: {session.user.email?.split('@')[0]}
                         </p>
                         
                         {/* Sezione Creazione */}
@@ -124,7 +124,9 @@ export default function Homepage() {
                             ESCI
                         </button>
                     </div>
-                    <HomepageFriendsList currentUserId={session.user.id} />
+
+                    <HomepageFriendsList currentUserId={session.user.id} /> 
+                    
                 </>
 
             )}

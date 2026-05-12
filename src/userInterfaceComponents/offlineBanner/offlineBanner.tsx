@@ -15,17 +15,19 @@ export const OfflineBanner = ({ variant = 'simple' }: OfflineBannerProps) => {
       <div
         style={{
           position: 'fixed',
-          top: 50,
-          left: 0,
-          right: 0,
-          padding: '15px 20px',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '300px',
+          padding: '25px 30px',
           backgroundColor: '#ff6b6b',
           color: 'white',
           textAlign: 'center',
           fontWeight: 'bold',
           fontSize: '16px',
           zIndex: 50,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          borderRadius: '12px'
         }}
       >
         SEI OFFLINE - Ritornando alla home...
@@ -47,7 +49,7 @@ export const OfflineBanner = ({ variant = 'simple' }: OfflineBannerProps) => {
         border: '1px solid #ffb81c'
       }}
     >
-      SEI OFFLINE - I dati potrebbero non essere aggiornati
+      SEI OFFLINE - I dati potrebbero non essere aggiornati e non puoi giocare.
     </div>
   );
 };

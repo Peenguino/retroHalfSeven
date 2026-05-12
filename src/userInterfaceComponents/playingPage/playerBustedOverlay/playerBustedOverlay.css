@@ -1,0 +1,17 @@
+.player-busted-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(200, 0, 0, 0.9);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    z-index: 20;
+    text-align: center;
+    border: 3px solid #ff0000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    font-size: 24px;
+    font-weight: bold;
+    animation: pulse 1.5s ease-in-out;
+}

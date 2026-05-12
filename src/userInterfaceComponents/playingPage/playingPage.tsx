@@ -30,7 +30,7 @@ function dbCardsToCardProps(cards: any[]): CardProps[] {
 // Entrypoint della pagina che contiene la gestione Supabase, Realtime e Hooks globali
 export default function Playingpage() {
     const { gameId } = useParams()
-    const [currentUserId, setCurrentUserId] = useState<String | null>(null)
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
     const [players, setPlayers] = useState<any[]>([])
     const [targetStartTime, setTargetStartTime] = useState<string | null>(null)
     const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<string | null>(null)
@@ -50,7 +50,7 @@ export default function Playingpage() {
             // Aspetta per far leggere il banner, poi torna alla home
             timeout = setTimeout(() => {
                 navigate('/');
-            }, 4500);
+            }, 6000);
         }
         return () => clearTimeout(timeout);
     }, [isOffline, navigate]);
@@ -297,9 +297,7 @@ export default function Playingpage() {
     // Se è offline, sovrapponi il tuo OfflineBanner warning e blocca l'interfaccia
     if (isOffline) {
         return (
-        <div className="offline-overlay" style={{ height: '100vh', backgroundColor: '#000' }}>
             <OfflineBanner variant="warning" />
-        </div>
         );
     }
 

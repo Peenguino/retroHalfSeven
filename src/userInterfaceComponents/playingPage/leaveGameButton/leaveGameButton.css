@@ -1,0 +1,135 @@
+.leave-game-button {
+  background-color: transparent;
+  color: #ff6b6b;
+  border: 2px solid #ff6b6b;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 12px;
+}
+
+.leave-game-button:hover {
+  background-color: #ff6b6b;
+  color: white;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+}
+
+.leave-game-button:active {
+  transform: scale(0.95);
+}
+
+/* Modal Styles */
+.leave-game-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.leave-game-modal {
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+  text-align: center;
+  max-width: 400px;
+  animation: slideUp 0.3s ease;
+}
+
+.leave-game-modal h2 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #ff6b6b;
+}
+
+.leave-game-modal p {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #ddd;
+}
+
+.leave-game-warning {
+  background-color: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff6b6b;
+  padding: 12px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 13px;
+  color: #ff8787;
+}
+
+.leave-game-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.leave-game-modal-buttons button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  padding: 8px 16px;
+  border: 2px solid;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.leave-game-confirm-btn {
+  background-color: #ff6b6b;
+  color: white;
+  border-color: #ff6b6b;
+}
+
+.leave-game-confirm-btn:hover {
+  background-color: #ff5252;
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.6);
+}
+
+.leave-game-cancel-btn {
+  background-color: transparent;
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.leave-game-cancel-btn:hover {
+  background-color: #4caf50;
+  color: white;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
