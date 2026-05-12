@@ -198,7 +198,7 @@ export default function HomepageFriendsList({ currentUserId }: { currentUserId: 
             )}
 
             <div style={{
-                position: 'fixed', top: 0, right: isOpen ? 0 : '-350px', width: '350px', height: '100vh',
+                position: 'fixed', top: 0, right: isOpen ? 0 : '-350px', width: '350px', height: '100dvh',
                 backgroundColor: 'rgba(0,0,0,0.95)', color: 'white', zIndex: 40,
                 transition: 'right 0.3s ease-in-out', borderLeft: '1px solid rgba(255,255,255,0.1)'
             }}>
@@ -233,7 +233,7 @@ export default function HomepageFriendsList({ currentUserId }: { currentUserId: 
                             style={{
                                 width: '100%', padding: '10px', borderRadius: '5px', border: 'none',
                                 backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', outline: 'none',
-                                fontSize: '12px', opacity: isOffline ? 0.5 : 1
+                                fontSize: '12px', opacity: isOffline ? 0.5 : 1, fontFamily:'"Press Start 2P", cursive'
                             }}
                         />
 

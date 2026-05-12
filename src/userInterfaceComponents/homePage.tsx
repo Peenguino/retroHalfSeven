@@ -86,6 +86,7 @@ export default function Homepage() {
     };
 
     return (
+        <>
         <div className="homepage-container">
             <div className='game-title'> retroHalfSeven </div>
 
@@ -125,11 +126,12 @@ export default function Homepage() {
                         </button>
                     </div>
 
-                    <HomepageFriendsList currentUserId={session.user.id} /> 
-                    
                 </>
 
             )}
         </div>
+
+        {session && <HomepageFriendsList currentUserId={session.user.id} />}
+        </>
     );
 }
