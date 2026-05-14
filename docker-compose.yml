@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  retro-half-seven-frontend:
+    # build permette la lettura del Dockerfile nella corrente dir e lo builda
+    build: .
+    container_name: retro-half-seven-frontend-client
+    ports:
+      - "4173:4173"
+    env_file:
+      - .env.local
