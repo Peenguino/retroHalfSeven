@@ -1,14 +1,71 @@
 # retroHalfSeven
 
-Web Development Class Project.
+UNIPI Web Development Class Project.
 
 ## Istruzioni per Setup e Run
 
-### Setup Locale (Docker)
+Guida per il setup con e senza docker.
+- Di default viene usato docker da supabase se scegliamo di runnare in locale il backend.
+- La configurazione dei due **file di env** è in comune tra i due tipi di setup. Di conseguenza a prescindere dal tipo di setup scelto vanno così configurate le due `.env`:
 
-dopo
+### Setup dei file `.env` Frontend/Backend
 
-### Setup Locale (No Docker)
+- **Frontend `./.env.local`** Mantiene le informazioni utili al link da *frontend* a *backend*:
+
+    ```bash
+    # L'URL punterà al gateway API del Supabase locale, solitamente
+    # questo è quello di default altrimenti va matchato con quello
+    # che ci viene fornito a tempo di supabase start
+    VITE_SUPABASE_URL=http://127.0.0.1:54321
+
+    # La chiave verrà fornita dal terminale a tempo di supabase start
+    # Dato che sono in container diversi frontend e backend possiamo
+    # runnare il backend per acquisire questa chiave ed inserirla qui
+    VITE_SUPABASE_ANON_KEY=inserisci_chiave
+
+    # Chiave pubblica VAPID per le Web Push Notifications
+    VITE_VAPID_PUBLIC_KEY=inserisci_chiave
+    ```
+
+    Il `./.env` presente nella repo è quindi un template vuoto del `./.env.local` atteso dal frontend per acquisire le chiavi.
+
+- **Backend `./supabase/functions/.env`** Mantiene le chiavi VAPID al *backend*:
+
+    Prima creiamo il file in `./supabase/functions/`, quindi se siamo nella root della repo eseguiamo:
+
+    ```bash
+    touch ./supabase/functions/.env
+    ```
+
+    Successivamente popoliamo il `./supabase/functions/.env` con le VAPID keys.
+
+    ```bash
+    VAPID_PUBLIC_KEY=inserisci_chiave
+    VAPID_PRIVATE_KEY=inserisci_chiave
+    ```
+
+### Setup Docker
+
+Si assume di aver clonato la repo e configurato gli `env` come specificato nel [punto precedente](#setup-dei-file-env-frontendbackend).
+
+1. **Lancio Containers Backend**
+    ```bash
+    npx supabase start
+    ```
+    Una volta lanciato questo comando possiamo acquisire le due variabili `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` richieste dal `.env.local` del frontend.
+
+2. **Serve delle Edge Functions**
+    ```bash
+    npx supabase functions serve
+    ```
+3. **Up al Docker Compose Frontend**
+    ```bash
+    docker compose up --build
+    ```
+    - La flag `--build` ci permette di costruire sulla base del `Dockerfile` a cui puntiamo nel `docker-compose.yml`. Nel caso di semplice avvio possiamo rimuovere la flag.
+    - Questo comando acquisisce la CLI da cui lo si lancia ed espone l'URL che utilizzeremo per il nostro browser.
+
+### Setup No Docker
 
 Anche per il setup senza container è richiesto che sia avviato il servizio di Docker engine in background, dato che tutto l'ambiente Supabase in locale si basa sul suo utilizzo.
 
@@ -35,40 +92,9 @@ In questo modo possiamo leggere nel `package.json` sia le dipendenze dev/runtime
 
 La flag `--legacy-peer-deps` è lasciata per risolvere un problema descritto nelle [note in fondo](#note).
 
-#### 04 - Settings dei due `.env`
+#### 04 - Configurazione delle `env`
 
-Abbiamo due file `.env`:
-- **Frontend `./.env.local`** Mantiene le informazioni utili al link da *frontend* a *backend*:
-
-    ```bash
-    # L'URL punterà al gateway API del Supabase locale, solitamente
-    # questo è quello di default altrimenti va matchato con quello
-    # che ci viene fornito a tempo di supabase start
-    VITE_SUPABASE_URL=http://127.0.0.1:54321
-
-    # La chiave verrà fornita dal terminale a tempo di supabase start
-    VITE_SUPABASE_ANON_KEY=inserisci_chiave
-
-    # Chiave pubblica VAPID per le Web Push Notifications
-    VITE_VAPID_PUBLIC_KEY=inserisci_chiave
-    ```
-
-    Il `./.env` presente nella repo è quindi un template vuoto del `./.env.local` atteso dal frontend per acquisire le chiavi.
-
-- **Backend `./supabase/functions/.env`** Mantiene le chiavi VAPID al *backend*:
-
-    Prima creiamo il file in `./supabase/functions/`, quindi se siamo nella root della repo eseguiamo:
-
-    ```bash
-    touch ./supabase/functions/.env
-    ```
-
-    Successivamente popoliamo il `./supabase/functions/.env` con le VAPID keys.
-
-    ```bash
-    VAPID_PUBLIC_KEY=inserisci_chiave
-    VAPID_PRIVATE_KEY=inserisci_chiave
-    ```
+Vedi [sopra](#setup-dei-file-env-frontendbackend).
 
 #### 05 - Avvio Backend
 
@@ -116,6 +142,6 @@ La flag ci permette di utilizzare le peerDependency legacy di `vite-plugin-pwa` 
 npm assume un comportamento strict sul controllo di dipendenze e `vite-plugin-pwa` ancora
 non è stato definito per `Vite 8` uscito a Marzo 2026.
 
-### `.env` e `.env.local`
+### `./.env` e `./.env.local`
 
-Il file `.env` lasciato sulla repo è il template del `.env.local` atteso dall'ambiente di supabase. Questo può essere anche popolato e lasciato pubblico data la gestione delle operazioni su DB tramite security rules ma per poter differenziare più facilmente tra ambienti di dev/prod/test preferisco istanziarlo nella `.env.local` (non presente su repo, oscurata dalla `.gitignore`) lasciando però pubblico il template in `.env`.
+Il file `./.env` lasciato sulla repo è il template del `./.env.local` atteso dall'ambiente di vite. Questo può essere anche popolato e lasciato pubblico data la gestione delle operazioni su DB tramite security rules ma per poter differenziare più facilmente tra ambienti di dev/prod/test preferisco istanziarlo nella `.env.local` (non presente su repo, oscurata dalla `.gitignore`) lasciando però pubblico il template in `.env`.
