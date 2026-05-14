@@ -24,6 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 
+/supabase/functions/.env
+
 # Checklist .md
 checklist.md
 push_notifications_history.md
+
+# prod env
+.env_prod
