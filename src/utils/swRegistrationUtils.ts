@@ -118,13 +118,13 @@ export const registerPushSubscription = async () => {
 
     // Invocazione edge function subscribe-push-notifications
     const { data, error } = await (
-      await import('../auth_supabase/supabaseClient')
-    ).supabase.functions.invoke('subscribe-push-notifications', {
-      body: {
-        endpoint: subscriptionJson.endpoint,
-        keys: subscriptionJson.keys,
-        device_name: `${navigator.userAgent.split(' ').slice(-2).join(' ')}`,
-      },
+      await import('../auth_supabase/supabaseClient')).supabase.functions.invoke(
+        'subscribe-push-notifications', {
+        body: {
+          endpoint: subscriptionJson.endpoint,
+          keys: subscriptionJson.keys,
+          device_name: `${navigator.userAgent.split(' ').slice(-2).join(' ')}`,
+        },
     });
 
     if (error) {

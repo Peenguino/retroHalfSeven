@@ -36,6 +36,9 @@ export function AuthComponent() {
 
   return (
     <div className='auth-card'>
+
+      <h1 style={{ textShadow: '2.5px 2.5px 0 #000, -2.5px -2.5px 0 #000, 2.5px -2.5px 0 #000, -2.5px 2.5px 0 #000' }} > Login </h1>
+
       <input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
       <input type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
       

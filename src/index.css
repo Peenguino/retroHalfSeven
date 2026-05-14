@@ -2,6 +2,7 @@
 :root {    
     --bg: #16171d; /* Sfondo scuro */
     --text: #f3f4f6;
+    --card-color: #2c472f;
 }
 
 * {
@@ -11,7 +12,7 @@
 }
 
 html, body {
-    background-color: #070d0b54;
+    background-color: #141014d8;
 
     width: 100vw;
     height: 100dvh;
@@ -110,7 +111,7 @@ html, body {
     justify-content: center;
     align-items: center;
     
-    background-color: #2a6915; 
+    background-color: var(--card-color);
     
     /* Padding generoso per dare respiro agli elementi interni */
     padding: 30px 30px;
@@ -123,7 +124,7 @@ html, body {
     box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.3);
     
     /* Larghezza massima per non farlo troppo grande su desktop */
-    max-width: 450px;
+    max-width: 550px;
     width: 60%;
     
     /* Spazio tra gli elementi interni (titolo, input, bottoni) */
@@ -136,7 +137,7 @@ html, body {
     justify-content: center;
     align-items: center;
     
-    background-color: #2a6915; 
+    background-color: var(--card-color);
     
     /* Padding generoso per dare respiro agli elementi interni */
     padding: 30px 30px;
@@ -183,6 +184,6 @@ html, body {
          5px  0px 0 #000,
         -5px  0px 0 #000;
 
-    margin-bottom: 25px;
+    margin-bottom: 100px;
     letter-spacing: 4px;
 }

@@ -1,4 +1,3 @@
-
 interface DBConfig {
     dbName: string;
     version: number;
@@ -245,4 +244,7 @@ class IndexedDBManager {
   }
 }
 
+// Stiamo seguendo il pattern singleton dato che definiamo una
+// classe IndexedDBManager ed esportiamo solo un riferimento ad una singola istanza
+// della classe in questione
 export const indexedDBManager = new IndexedDBManager();
