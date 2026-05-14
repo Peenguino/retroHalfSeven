@@ -4,15 +4,28 @@ import { useEffect } from 'react'
 import Homepage from './userInterfaceComponents/homePage'
 import Playingpage from './userInterfaceComponents/playingPage/playingPage'
 import { requestNotificationPermissionAndRegister } from './utils/swRegistrationUtils'
+// IMPORTANTE: Importa il client supabase per ascoltare lo stato
+import { supabase } from './auth_supabase/supabaseClient' 
 
 function App() {
 
-  // Hook per richiesta permessi notifiche
   useEffect(() => {
-    // Richiedi permesso notifiche push e registra subscription
-    requestNotificationPermissionAndRegister().catch(err => {
-      console.error('[App] Errore richiesta notifiche:', err);
+    // Sottoscriviti ai cambiamenti di stato dell'autenticazione
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Se l'utente ha fatto il login o se la pagina si è caricata con una sessione già esistente
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        console.log('[App] Sessione rilevata, avvio registrazione notifiche...');
+        
+        requestNotificationPermissionAndRegister().catch(err => {
+          console.error('[App] Errore richiesta notifiche:', err);
+        });
+      }
     });
+
+    // Cleanup della sottoscrizione quando il componente viene smontato
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
