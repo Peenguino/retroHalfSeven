@@ -17,7 +17,7 @@ serve(async (req) => {
 
     if (!authHeader) throw new Error('Authorization mancante');
     const token = authHeader.replace('Bearer ', '').trim();
-    
+
     if (!token || token === 'undefined' || token === 'null') {
       throw new Error('Token JWT mancante o non pronto');
     }

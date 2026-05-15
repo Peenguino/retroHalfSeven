@@ -1,3 +1,5 @@
+import { supabase } from "../auth_supabase/supabaseClient";
+
 export const registerServiceWorker = async () => {
   if (!('serviceWorker' in navigator)) {
     console.log('[SW Registration] Service Workers non supportati');
@@ -116,16 +118,21 @@ export const registerPushSubscription = async () => {
     // Serializza la subscription e inviala al backend
     const subscriptionJson = JSON.parse(JSON.stringify(subscription));
 
+    const session = await supabase.auth.getSession();
+    if (!session?.data?.session?.access_token) {
+      throw new Error('Token di sessione non disponibile - sessione non sincronizzata');
+    }
+
     // Invocazione edge function subscribe-push-notifications
     const { data, error } = await (
-      await import('../auth_supabase/supabaseClient')).supabase.functions.invoke(
+      await supabase.functions.invoke(
         'subscribe-push-notifications', {
         body: {
           endpoint: subscriptionJson.endpoint,
           keys: subscriptionJson.keys,
           device_name: `${navigator.userAgent.split(' ').slice(-2).join(' ')}`,
         },
-    });
+    }));
 
     if (error) {
       throw new Error(`Errore registrazione subscription: ${error.message}`);
