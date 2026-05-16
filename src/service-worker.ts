@@ -140,7 +140,11 @@ self.addEventListener('push', (event: PushEvent) => {
   }
 });
 
-// Evento Notification Click - Gestione click sulla notifica
+// --- Evento Notification Click - Gestione click sulla notifica
+// Il SW comunica in message passing, di conseguenza in questo caso, acquisendo un evento
+// di tipo notificationclick questo manda un messaggio contenente il codice verso cui effettuare
+// la chiamata alla join-game
+
 self.addEventListener('notificationclick', (event: NotificationEvent) => {
   console.log('[ServiceWorker] Notification click event');
   
