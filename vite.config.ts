@@ -33,9 +33,7 @@ export default defineConfig({
       
       // Definito così dato che non vogliamo comportamenti di default
       // stiamo infatti definendo il caching in modo custom
-      injectManifest: {
-        injectionPoint: undefined
-      },
+      injectRegister: null,
 
       // Try per abilitare sw in sviluppo con npm run dev
       devOptions: {

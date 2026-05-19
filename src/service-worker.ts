@@ -1,9 +1,9 @@
 // Usiamo una direttiva per specificare che non siamo in ambito DOM ma
 // questo è un webworker ed utilizza le specifiche librerie per i web worker
 /// <reference lib="webworker" />
+import { precacheAndRoute } from "workbox-precaching";
 
-// src/service-worker.ts
-// Implementazione del service worker custom
+precacheAndRoute((self as any).__WB_MANIFEST);
 
 const CACHE_NAME = 'retrohalfseven-v1';
 const OFFLINE_URL = '/index.html';
@@ -12,9 +12,10 @@ const OFFLINE_URL = '/index.html';
 const CRITICAL_URLS = [
   '/',
   '/index.html',
-  '/src/main.tsx',
-  '/src/App.tsx'
 ];
+
+// Implementazione del service worker custom
+
 
 // Evento Install - Cache risorse critiche
 self.addEventListener('install', (event: ExtendableEvent) => {
