@@ -6,6 +6,7 @@ UNIPI Web Development Class Project.
 
 - Dettagli per il **setup e dipendenze**:
     - Di default viene usato docker da supabase se scegliamo di runnare in locale il backend.
+    - **Dipendenze da soddisfare per il setup**:
         - `docker` l'engine di docker per la costruzione ed il run dei container. 
             - Si lascia un [link](https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script) alla configurazione rapida ufficiale di Docker tramite script in bash per l'installazione.
         - `npm` packet manager di node.
