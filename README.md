@@ -82,14 +82,16 @@ UNIPI Web Development Class Project.
 6. **Up al Docker Compose Frontend**
 
     Se eseguito subito dopo il passo *5.* va creato un nuovo terminale, dato che quello precedente sarà bloccato sui logs delle funzioni.
+    - Si assume quindi la creazione di un nuovo terminale per il lancio del container frontend, tornando nuovamente nella dir della repo.
 
     ```bash
+    cd retroHalfSeven
     docker compose up --build
     ```
     - La flag `--build` ci permette di costruire sulla base del `Dockerfile` a cui puntiamo nel `docker-compose.yml`. Nel caso di semplice avvio possiamo rimuovere la flag.
     - Questo comando acquisisce la CLI da cui lo si lancia ed espone l'URL che utilizzeremo per il nostro browser.
 
-7. **Comandi Utili per la Terminazione Backend**
+8. **Comandi Utili per la Terminazione Backend**
 
     ```bash
     # Comando per terminazione processo backend
