@@ -80,7 +80,7 @@ export default function PlayingPageFriendsList({ currentUserId, inviteCode, game
             style={{
             right: isOpen ? 0 : '-300px'
         }}>
-            {/* Bottone Freccia: permette apertura che chiusura del menù amici */}
+            {/* Freccia che permette apertura che chiusura del menu laterale amici */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className='arrow-button-friend-list'

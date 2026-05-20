@@ -16,7 +16,6 @@ const CRITICAL_URLS = [
 
 // Implementazione del service worker custom
 
-
 // Evento Install - Cache risorse critiche
 self.addEventListener('install', (event: ExtendableEvent) => {
   console.log('[ServiceWorker] Install event');

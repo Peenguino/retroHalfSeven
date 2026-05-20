@@ -1,10 +1,9 @@
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { useEffect } from 'react'
-import Homepage from './userInterfaceComponents/homePage'
-import Playingpage from './userInterfaceComponents/playingPage/playingPage'
+import Homepage from './ui/homePage'
+import Playingpage from './ui/playingPage/playingPage'
 import { requestNotificationPermissionAndRegister } from './utils/swRegistrationUtils'
-// IMPORTANTE: Importa il client supabase per ascoltare lo stato
 import { supabase } from './auth_supabase/supabaseClient' 
 
 function App() {

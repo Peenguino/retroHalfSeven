@@ -6,7 +6,7 @@ import { useOfflineStatus } from '../../utils/useOfflineStatus';
 import { OfflineBanner } from '../offlineBanner/offlineBanner';
 
 import './playingPage.css'
-import '../../userInterfaceComponents/handComponent/handComponent.css';
+import '../../ui/handComponent/handComponent.css';
 
 import { type CardProps } from '../../types';
 import TableContainer from './tableContainer/tableContainer';

@@ -97,19 +97,60 @@ UNIPI Web Development Class Project.
     npx supabase db reset
     ```
 
-## Descrizione Dir Progetto
+## Descrizione Repository
 
 Seguendo lo stile monorepo la dir è strutturata in questo modo:
+
+### Frontend
 
 - `./src/` contiene il frontend:
     - `./src/assets` contiene tutti gli sprite delle carte.
         - [`assetsMapping.tsx`](./src/assets/assetsMapping.tsx) esporta un `Record` che mappa gli sprite.
-    - `./src/authSupabase` contiene la logica di autenticazione tramite client supabase:
+    - `./src/authSupabase` contiene la logica di autenticazione tramite client Supabase:
         - [`authComponents.tsx`](./src/auth_supabase/authComponents.tsx) esporta il componente dedicato all'autenticazione utilizzato nella homepage.
         - [`supabaseClient.tsx`](./src/auth_supabase/supabaseClient.tsx) legge i token dalla `./local.env` ed istanzia ed esporta il client di Supabase.
-    - `./src/cardComponents` contiene i componenti che gestiscono la logica dietro le carte:
+    - `./src/cardComponents` contiene i componenti che gestiscono la visualizzazione delle carte:
         - [`cardCenter.tsx`](./src/cardComponents/cardCenter.tsx) gestisce il rendering del corretto sprite rispetto alla figura ed al punteggio relativo alla carta.
         - [`playingCard.tsx`](./src/cardComponents/playingCard.tsx) gestisce ed espone l'intero componente della carta, importando quindi la logica di [`cardCenter.tsx`](./src/cardComponents/cardCenter.tsx).
+    - `./src/ui` contiene tutti i componenti relativi alla UI di hompage e playingpage:
+        - [`dealerHand.tsx`](./src/ui/dealerHand/dealerHand.tsx) componente per la gestione del banco.
+        - [`./friendshipsComponents/homepageFriendsList.tsx`](./src/ui/friendshipsComponents/homepageFriendsList/homepageFriendsList.tsx) componente per la lista amici visualizzata nella homepage. Questa permette di cercare tra i player e aggiungere nuovi amici.
+        - [`./friendshipsComponents/playingpageFriendsList.tsx`](./src/ui/friendshipsComponents/playingpageFriendList/playingpageFriendList.tsx) componente per la lista amici visualizzata nella playingpage. Questa permette di invitare un player dalla lista amici alla stanza.
+        - [`handComponent.tsx`](./src/ui/handComponent/handComponent.tsx) componente per il rendering della mano corrente del player.
+        - [`offlineBanner.tsx`](./src/ui/offlineBanner/offlineBanner.tsx) componente per il banner mostrato in modalità offline nella homepage.
+        - `/playingPage/` sottodir che contiene tutti i componenti renderizzati nella playingpage:
+            - [`bettedFiches.tsx`](/src/ui/playingPage/bettedFiches/bettedFiches.tsx) tiene conto della somma delle fiches selezionate per la fase di bet.
+            - [`bettingPhase.tsx`](/src/ui/playingPage/bettingPhase/bettingPhase.tsx) stato visualizzato durante la fase di bet.
+            - [`fiches.tsx`](/src/ui/playingPage/fiches/fiches.tsx) si occupa dell'utilizzo del `Record` per il mapping e ciascuna fiche somma il suo valore alle `bettedFiches`.
+            - [`leaveGameButton.tsx`](/src/ui/playingPage/leaveGameButton/leaveGameButton.tsx) contenuto nel [`roomCodeHeader`](/src/ui/playingPage/roomCodeHeader/roomCodeHeader.tsx), permette di abbandonare la partita.
+            - [`opponentHand.tsx`](/src/ui/playingPage/opponentHand/opponentHand.tsx) logica per la visualizzazione delle mani degli altri giocatori partecipanti al banco.
+            - [`playActions.tsx`](/src/ui/playingPage/playActions/playActions.tsx) componente per le azioni stai/carta.
+            - [`playerBustedOverlay.tsx`](/src/ui/playingPage/playerBustedOverlay/playerBustedOverlay.tsx) componente visualizzato in caso di stato busted (superato il punteggio massimo).
+            - [`resultsOverlay.tsx`](/src/ui/playingPage/resultsOverlay/resultsOverlay.tsx) tabella visualizzata alla fine, riassunto delle mani di tutti i giocatori rispetto al risultato del banco.
+            - [`roomCodeHeader.tsx`](/src/ui/playingPage/roomCodeHeader/roomCodeHeader.tsx) permette la visualizzazione del codice invito della stanza corrente.
+            - [`scoreVisualizer.tsx`](/src/ui/playingPage/scoreVisualizer/scoreVisualizer.tsx) permette la visualizzazione dello score della mano del player.
+            - [`spectatorBanner.tsx`](/src/ui/playingPage/spectatorBanner/spectatorBanner.tsx) permette la visualizzazione di un banner di stato spettatore se un player si unisce durante una partita in corso.
+            - [`tableContainer.tsx`](/src/ui/playingPage/tableContainer/tableContainer.tsx) componente che gestisce tutta la visualizzazione del tavolo di gioco, utilizzando tutti i sottocomponenti definiti prima.
+            - [`playingPage.tsx`](/src/ui/playingPage/playingPage.tsx) componente che istanzia un [`tableContainer.tsx`](/src/ui/playingPage/tableContainer/tableContainer.tsx) e la [`playingpageFriendsList.tsx`](./src/ui/friendshipsComponents/playingpageFriendList/playingpageFriendList.tsx) gestendo gli hooks per le invocazioni delle Edge Functions relative alla parte di gioco e l'iscrizione al Realtime di Supabase per visualizzare le modifiche sul DB per ogni client.
+        - [`homepage.tsx`](/src/ui/homePage.tsx) mantiene tutta la logica della home, visualizzando il componente per l'autenticazione se l'utente non ha ancora effettuato l'accesso.
+    - [`App.tsx`](/src/App.tsx) gestisce il routing della Single Page Application e tramite l'utilizzo di un Hook tiene traccia dell'autenticazione per effettuare eventualmente l'iscrizione per la ricezione di notifiche.
+    - [`main.tsx`](/src/main.tsx) entrypoint sulla root.
+    - [`service-worker.ts`](/src/service-worker.ts) implementazione del service worker custom, si occupa di:
+        - Tenere traccia dello stato offline ed eventualmente utlilizzare i dati in cache, come nel caso della lista amici consultabile offline.
+        - Occuparsi della registrazione per le notifiche push.
+        - Occuparsi di inviare un messaggio in caso di eventuale click su notifica push, per fare in modo che possa essere invocata dal thread main l'Edge Function per unirsi ad una stanza.
+    - `./utils/` contiene alcune funzioni d'utilità:
+        - [`indexedDBManager.ts`](/src/utils/indexedDBManager.ts) gestione di una sottoclasse di IndexedDB di cui esportiamo una sola sua istanza secondo in pattern Singleton. Offre metodi utilizzati per la visualizzazione e la gestione della lista amici della homepage anche in caso di stato offline.
+        - [`swRegistrationUtils.ts`](/src/utils/swRegistrationUtils.ts) funzioni di utilità per registrazione del Service Worker e richiesta permessi per notifiche.
+        - [`useOfflineStatus.ts`](/src/utils/useOfflineStatus.ts) hook custom per la gestione dello stato offline.
+
+### Backend
+
+- `./supabase/` contiene il backend:
+    - `./supabase/functions` contiene tutte le Edge Functions esposte dal backend ed invocate dal frontend.
+    - `./supabase/migrations` contiene SQL che se applicato porta ad uno stato di init del DB atteso dal backend.
+
+
 ## Note
 
 Elenco di annotazioni tecniche trovate durante lo sviluppo:
