@@ -97,6 +97,19 @@ UNIPI Web Development Class Project.
     npx supabase db reset
     ```
 
+## Descrizione Dir Progetto
+
+Seguendo lo stile monorepo la dir è strutturata in questo modo:
+
+- `./src/` contiene il frontend:
+    - `./src/assets` contiene tutti gli sprite delle carte.
+        - [`assetsMapping.tsx`](./src/assets/assetsMapping.tsx) esporta un `Record` che mappa gli sprite.
+    - `./src/authSupabase` contiene la logica di autenticazione tramite client supabase:
+        - [`authComponents.tsx`](./src/auth_supabase/authComponents.tsx) esporta il componente dedicato all'autenticazione utilizzato nella homepage.
+        - [`supabaseClient.tsx`](./src/auth_supabase/supabaseClient.tsx) legge i token dalla `./local.env` ed istanzia ed esporta il client di Supabase.
+    - `./src/cardComponents` contiene i componenti che gestiscono la logica dietro le carte:
+        - [`cardCenter.tsx`](./src/cardComponents/cardCenter.tsx) gestisce il rendering del corretto sprite rispetto alla figura ed al punteggio relativo alla carta.
+        - [`playingCard.tsx`](./src/cardComponents/playingCard.tsx) gestisce ed espone l'intero componente della carta, importando quindi la logica di [`cardCenter.tsx`](./src/cardComponents/cardCenter.tsx).
 ## Note
 
 Elenco di annotazioni tecniche trovate durante lo sviluppo:
